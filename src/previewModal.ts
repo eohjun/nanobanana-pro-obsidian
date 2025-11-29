@@ -1,5 +1,6 @@
 import { App, Modal, Setting } from 'obsidian';
-import { NanoBananaSettings, PROVIDER_CONFIGS, IMAGE_STYLES } from './types';
+import { NanoBananaSettings, PROVIDER_CONFIGS, IMAGE_STYLES, PreferredLanguage } from './types';
+import { getMessages, UIMessages } from './i18n';
 
 export interface PreviewModalResult {
   confirmed: boolean;
@@ -12,17 +13,20 @@ export class PreviewModal extends Modal {
   private settings: NanoBananaSettings;
   private onConfirm: (result: PreviewModalResult) => void;
   private promptTextarea: HTMLTextAreaElement;
+  private messages: UIMessages;
 
   constructor(
     app: App,
     prompt: string,
     settings: NanoBananaSettings,
-    onConfirm: (result: PreviewModalResult) => void
+    onConfirm: (result: PreviewModalResult) => void,
+    language: PreferredLanguage = 'en'
   ) {
     super(app);
     this.prompt = prompt;
     this.settings = settings;
     this.onConfirm = onConfirm;
+    this.messages = getMessages(language);
   }
 
   onOpen() {
@@ -31,7 +35,7 @@ export class PreviewModal extends Modal {
 
     // Title
     contentEl.createEl('h2', {
-      text: '📝 프롬프트 미리보기',
+      text: this.messages.previewTitle,
       cls: 'nanobanana-preview-title'
     });
 
@@ -40,23 +44,23 @@ export class PreviewModal extends Modal {
 
     infoSection.createDiv({
       cls: 'nanobanana-preview-info-item',
-      text: `🤖 프롬프트 모델: ${PROVIDER_CONFIGS[this.settings.selectedProvider].name} - ${this.settings.promptModel}`
+      text: `${this.messages.previewPromptModel}: ${PROVIDER_CONFIGS[this.settings.selectedProvider].name} - ${this.settings.promptModel}`
     });
 
     infoSection.createDiv({
       cls: 'nanobanana-preview-info-item',
-      text: `🖼️ 이미지 모델: ${this.settings.imageModel}`
+      text: `${this.messages.previewImageModel}: ${this.settings.imageModel}`
     });
 
     infoSection.createDiv({
       cls: 'nanobanana-preview-info-item',
-      text: `📊 스타일: ${IMAGE_STYLES[this.settings.imageStyle]}`
+      text: `${this.messages.previewStyle}: ${IMAGE_STYLES[this.settings.imageStyle]}`
     });
 
     // Prompt textarea
     const textareaContainer = contentEl.createDiv({ cls: 'nanobanana-textarea-container' });
     textareaContainer.createEl('label', {
-      text: '생성된 프롬프트 (수정 가능):',
+      text: this.messages.previewPromptLabel,
       cls: 'nanobanana-textarea-label'
     });
 
@@ -68,26 +72,26 @@ export class PreviewModal extends Modal {
 
     // Character count
     const charCount = textareaContainer.createDiv({ cls: 'nanobanana-char-count' });
-    charCount.setText(`${this.prompt.length} 자`);
+    charCount.setText(`${this.prompt.length} ${this.messages.previewCharacters}`);
 
     this.promptTextarea.addEventListener('input', () => {
-      charCount.setText(`${this.promptTextarea.value.length} 자`);
+      charCount.setText(`${this.promptTextarea.value.length} ${this.messages.previewCharacters}`);
     });
 
     // Tips section
     const tipsSection = contentEl.createDiv({ cls: 'nanobanana-tips' });
-    tipsSection.createEl('p', { text: '💡 팁:' });
+    tipsSection.createEl('p', { text: this.messages.previewTipsTitle });
     const tipsList = tipsSection.createEl('ul');
-    tipsList.createEl('li', { text: '프롬프트를 수정하여 원하는 스타일로 조정할 수 있습니다' });
-    tipsList.createEl('li', { text: '구체적인 색상, 레이아웃, 요소를 추가하면 더 좋은 결과를 얻을 수 있습니다' });
-    tipsList.createEl('li', { text: '"다시 생성" 버튼으로 새로운 프롬프트를 생성할 수 있습니다' });
+    tipsList.createEl('li', { text: this.messages.previewTip1 });
+    tipsList.createEl('li', { text: this.messages.previewTip2 });
+    tipsList.createEl('li', { text: this.messages.previewTip3 });
 
     // Buttons
     const buttonContainer = contentEl.createDiv({ cls: 'nanobanana-button-container' });
 
     // Generate Image button
     const generateButton = buttonContainer.createEl('button', {
-      text: '🎨 이미지 생성',
+      text: this.messages.previewGenerate,
       cls: 'mod-cta'
     });
     generateButton.addEventListener('click', () => {
@@ -101,7 +105,7 @@ export class PreviewModal extends Modal {
 
     // Regenerate Prompt button
     const regenerateButton = buttonContainer.createEl('button', {
-      text: '🔄 다시 생성'
+      text: this.messages.previewRegenerate
     });
     regenerateButton.addEventListener('click', () => {
       this.onConfirm({
@@ -114,7 +118,7 @@ export class PreviewModal extends Modal {
 
     // Cancel button
     const cancelButton = buttonContainer.createEl('button', {
-      text: '취소'
+      text: this.messages.cancel
     });
     cancelButton.addEventListener('click', () => {
       this.onConfirm({

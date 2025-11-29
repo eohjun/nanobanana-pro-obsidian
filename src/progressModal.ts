@@ -1,5 +1,6 @@
 import { App, Modal } from 'obsidian';
-import { ProgressState, ProgressStep, GenerationError } from './types';
+import { ProgressState, ProgressStep, GenerationError, PreferredLanguage } from './types';
+import { getMessages, UIMessages } from './i18n';
 
 export class ProgressModal extends Modal {
   private progressContainer: HTMLElement;
@@ -9,17 +10,22 @@ export class ProgressModal extends Modal {
   private cancelButton: HTMLButtonElement;
   private onCancel: (() => void) | null = null;
   private isCancelled = false;
+  private messages: UIMessages;
 
-  private steps: { key: ProgressStep; label: string; icon: string }[] = [
-    { key: 'analyzing', label: '노트 분석', icon: '📄' },
-    { key: 'generating-prompt', label: '프롬프트 생성', icon: '🤖' },
-    { key: 'generating-image', label: '이미지 생성', icon: '🎨' },
-    { key: 'saving', label: '파일 저장', icon: '💾' },
-    { key: 'embedding', label: '노트에 삽입', icon: '📎' }
-  ];
+  private steps: { key: ProgressStep; label: string; icon: string }[] = [];
 
-  constructor(app: App) {
+  constructor(app: App, language: PreferredLanguage = 'en') {
     super(app);
+    this.messages = getMessages(language);
+
+    // Initialize steps with localized labels
+    this.steps = [
+      { key: 'analyzing', label: this.messages.stepAnalyzing, icon: '📄' },
+      { key: 'generating-prompt', label: this.messages.stepGeneratingPrompt, icon: '🤖' },
+      { key: 'generating-image', label: this.messages.stepGeneratingImage, icon: '🎨' },
+      { key: 'saving', label: this.messages.stepSaving, icon: '💾' },
+      { key: 'embedding', label: this.messages.stepEmbedding, icon: '📎' }
+    ];
   }
 
   onOpen() {
@@ -28,7 +34,7 @@ export class ProgressModal extends Modal {
 
     // Title
     contentEl.createEl('h2', {
-      text: '🎨 Knowledge Poster 생성 중...',
+      text: this.messages.progressTitle,
       cls: 'nanobanana-progress-title'
     });
 
@@ -47,13 +53,13 @@ export class ProgressModal extends Modal {
     // Estimated time
     contentEl.createDiv({
       cls: 'nanobanana-estimated-time',
-      text: '⏱️ 예상 소요 시간: 약 15-30초'
+      text: this.messages.estimatedTime
     });
 
     // Cancel button
     const buttonContainer = contentEl.createDiv({ cls: 'nanobanana-button-container' });
     this.cancelButton = buttonContainer.createEl('button', {
-      text: '취소',
+      text: this.messages.cancel,
       cls: 'nanobanana-cancel-button'
     });
     this.cancelButton.addEventListener('click', () => {
@@ -117,7 +123,7 @@ export class ProgressModal extends Modal {
     contentEl.addClass('nanobanana-error-state');
 
     contentEl.createEl('h2', {
-      text: '❌ 생성 실패',
+      text: this.messages.errorTitle,
       cls: 'nanobanana-error-title'
     });
 
@@ -135,7 +141,7 @@ export class ProgressModal extends Modal {
     const suggestions = this.getErrorSuggestions(error);
     if (suggestions.length > 0) {
       const suggestionBox = contentEl.createDiv({ cls: 'nanobanana-suggestions' });
-      suggestionBox.createEl('p', { text: '💡 해결 방법:' });
+      suggestionBox.createEl('p', { text: this.messages.errorSolutions });
       const list = suggestionBox.createEl('ul');
       for (const suggestion of suggestions) {
         list.createEl('li', { text: suggestion });
@@ -147,7 +153,7 @@ export class ProgressModal extends Modal {
 
     if (error.retryable) {
       const retryButton = buttonContainer.createEl('button', {
-        text: '다시 시도',
+        text: this.messages.retry,
         cls: 'nanobanana-retry-button mod-cta'
       });
       retryButton.addEventListener('click', () => {
@@ -159,7 +165,7 @@ export class ProgressModal extends Modal {
     }
 
     const closeButton = buttonContainer.createEl('button', {
-      text: '닫기',
+      text: this.messages.close,
       cls: 'nanobanana-close-button'
     });
     closeButton.addEventListener('click', () => this.close());
@@ -173,17 +179,17 @@ export class ProgressModal extends Modal {
     contentEl.addClass('nanobanana-success-state');
 
     contentEl.createEl('h2', {
-      text: '✅ Knowledge Poster 생성 완료!',
+      text: this.messages.successTitle,
       cls: 'nanobanana-success-title'
     });
 
     const infoBox = contentEl.createDiv({ cls: 'nanobanana-success-box' });
-    infoBox.createEl('p', { text: `📁 저장 위치: ${imagePath}` });
+    infoBox.createEl('p', { text: `${this.messages.successSaved}: ${imagePath}` });
 
     // Close button with auto-close
     const buttonContainer = contentEl.createDiv({ cls: 'nanobanana-button-container' });
     const closeButton = buttonContainer.createEl('button', {
-      text: '확인',
+      text: this.messages.confirm,
       cls: 'nanobanana-close-button mod-cta'
     });
     closeButton.addEventListener('click', () => this.close());
@@ -200,33 +206,33 @@ export class ProgressModal extends Modal {
     switch (error.type) {
       case 'INVALID_API_KEY':
         return [
-          '설정에서 API 키를 확인해주세요',
-          'API 키가 올바르게 입력되었는지 확인해주세요',
-          '해당 서비스의 API 키가 활성화되어 있는지 확인해주세요'
+          this.messages.suggestionCheckApiKey,
+          this.messages.suggestionVerifyApiKey,
+          this.messages.suggestionActivateApiKey
         ];
       case 'RATE_LIMIT':
         return [
-          '잠시 후 다시 시도해주세요',
-          'API 사용량 한도를 확인해주세요'
+          this.messages.suggestionWaitAndRetry,
+          this.messages.suggestionCheckQuota
         ];
       case 'NETWORK_ERROR':
         return [
-          '인터넷 연결을 확인해주세요',
-          'VPN이나 프록시 설정을 확인해주세요'
+          this.messages.suggestionCheckInternet,
+          this.messages.suggestionCheckVPN
         ];
       case 'GENERATION_FAILED':
         return [
-          '다른 스타일로 시도해보세요',
-          '노트 내용을 수정하고 다시 시도해주세요'
+          this.messages.suggestionTryDifferentStyle,
+          this.messages.suggestionModifyContent
         ];
       case 'CONTENT_FILTERED':
         return [
-          '노트 내용을 수정해주세요',
-          '민감한 내용이 포함되어 있을 수 있습니다'
+          this.messages.suggestionModifyContent,
+          this.messages.suggestionContentMayBeSensitive
         ];
       case 'NO_CONTENT':
         return [
-          '노트에 내용을 추가해주세요'
+          this.messages.suggestionAddContent
         ];
       default:
         return [];

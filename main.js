@@ -690,24 +690,357 @@ var FileService = class {
 
 // src/progressModal.ts
 var import_obsidian5 = require("obsidian");
+
+// src/i18n.ts
+var MESSAGES = {
+  ko: {
+    // Progress Modal
+    progressTitle: "\u{1F3A8} Knowledge Poster \uC0DD\uC131 \uC911...",
+    estimatedTime: "\u23F1\uFE0F \uC608\uC0C1 \uC18C\uC694 \uC2DC\uAC04: \uC57D 15-30\uCD08",
+    cancel: "\uCDE8\uC18C",
+    // Progress Steps
+    stepAnalyzing: "\uB178\uD2B8 \uBD84\uC11D",
+    stepGeneratingPrompt: "\uD504\uB86C\uD504\uD2B8 \uC0DD\uC131",
+    stepGeneratingImage: "\uC774\uBBF8\uC9C0 \uC0DD\uC131",
+    stepSaving: "\uD30C\uC77C \uC800\uC7A5",
+    stepEmbedding: "\uB178\uD2B8\uC5D0 \uC0BD\uC785",
+    // Success
+    successTitle: "\u2705 Knowledge Poster \uC0DD\uC131 \uC644\uB8CC!",
+    successSaved: "\u{1F4C1} \uC800\uC7A5 \uC704\uCE58",
+    confirm: "\uD655\uC778",
+    // Error
+    errorTitle: "\u274C \uC0DD\uC131 \uC2E4\uD328",
+    errorSolutions: "\u{1F4A1} \uD574\uACB0 \uBC29\uBC95:",
+    retry: "\uB2E4\uC2DC \uC2DC\uB3C4",
+    close: "\uB2EB\uAE30",
+    // Error Suggestions
+    suggestionCheckApiKey: "\uC124\uC815\uC5D0\uC11C API \uD0A4\uB97C \uD655\uC778\uD574\uC8FC\uC138\uC694",
+    suggestionVerifyApiKey: "API \uD0A4\uAC00 \uC62C\uBC14\uB974\uAC8C \uC785\uB825\uB418\uC5C8\uB294\uC9C0 \uD655\uC778\uD574\uC8FC\uC138\uC694",
+    suggestionActivateApiKey: "\uD574\uB2F9 \uC11C\uBE44\uC2A4\uC758 API \uD0A4\uAC00 \uD65C\uC131\uD654\uB418\uC5B4 \uC788\uB294\uC9C0 \uD655\uC778\uD574\uC8FC\uC138\uC694",
+    suggestionWaitAndRetry: "\uC7A0\uC2DC \uD6C4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574\uC8FC\uC138\uC694",
+    suggestionCheckQuota: "API \uC0AC\uC6A9\uB7C9 \uD55C\uB3C4\uB97C \uD655\uC778\uD574\uC8FC\uC138\uC694",
+    suggestionCheckInternet: "\uC778\uD130\uB137 \uC5F0\uACB0\uC744 \uD655\uC778\uD574\uC8FC\uC138\uC694",
+    suggestionCheckVPN: "VPN\uC774\uB098 \uD504\uB85D\uC2DC \uC124\uC815\uC744 \uD655\uC778\uD574\uC8FC\uC138\uC694",
+    suggestionTryDifferentStyle: "\uB2E4\uB978 \uC2A4\uD0C0\uC77C\uB85C \uC2DC\uB3C4\uD574\uBCF4\uC138\uC694",
+    suggestionModifyContent: "\uB178\uD2B8 \uB0B4\uC6A9\uC744 \uC218\uC815\uD558\uACE0 \uB2E4\uC2DC \uC2DC\uB3C4\uD574\uC8FC\uC138\uC694",
+    suggestionContentMayBeSensitive: "\uBBFC\uAC10\uD55C \uB0B4\uC6A9\uC774 \uD3EC\uD568\uB418\uC5B4 \uC788\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
+    suggestionAddContent: "\uB178\uD2B8\uC5D0 \uB0B4\uC6A9\uC744 \uCD94\uAC00\uD574\uC8FC\uC138\uC694",
+    // Preview Modal
+    previewTitle: "\u{1F4DD} \uD504\uB86C\uD504\uD2B8 \uBBF8\uB9AC\uBCF4\uAE30",
+    previewPromptLabel: "\uC0DD\uC131\uB41C \uD504\uB86C\uD504\uD2B8 (\uC218\uC815 \uAC00\uB2A5):",
+    previewCharacters: "\uC790",
+    previewTipsTitle: "\u{1F4A1} \uD301:",
+    previewTip1: "\uD504\uB86C\uD504\uD2B8\uB97C \uC218\uC815\uD558\uC5EC \uC6D0\uD558\uB294 \uC2A4\uD0C0\uC77C\uB85C \uC870\uC815\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
+    previewTip2: "\uAD6C\uCCB4\uC801\uC778 \uC0C9\uC0C1, \uB808\uC774\uC544\uC6C3, \uC694\uC18C\uB97C \uCD94\uAC00\uD558\uBA74 \uB354 \uC88B\uC740 \uACB0\uACFC\uB97C \uC5BB\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
+    previewTip3: '"\uB2E4\uC2DC \uC0DD\uC131" \uBC84\uD2BC\uC73C\uB85C \uC0C8\uB85C\uC6B4 \uD504\uB86C\uD504\uD2B8\uB97C \uC0DD\uC131\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4',
+    previewGenerate: "\u{1F3A8} \uC774\uBBF8\uC9C0 \uC0DD\uC131",
+    previewRegenerate: "\u{1F504} \uB2E4\uC2DC \uC0DD\uC131",
+    previewPromptModel: "\u{1F916} \uD504\uB86C\uD504\uD2B8 \uBAA8\uB378",
+    previewImageModel: "\u{1F5BC}\uFE0F \uC774\uBBF8\uC9C0 \uBAA8\uB378",
+    previewStyle: "\u{1F4CA} \uC2A4\uD0C0\uC77C"
+  },
+  en: {
+    // Progress Modal
+    progressTitle: "\u{1F3A8} Generating Knowledge Poster...",
+    estimatedTime: "\u23F1\uFE0F Estimated time: about 15-30 seconds",
+    cancel: "Cancel",
+    // Progress Steps
+    stepAnalyzing: "Analyzing note",
+    stepGeneratingPrompt: "Generating prompt",
+    stepGeneratingImage: "Generating image",
+    stepSaving: "Saving file",
+    stepEmbedding: "Embedding in note",
+    // Success
+    successTitle: "\u2705 Knowledge Poster Created!",
+    successSaved: "\u{1F4C1} Saved to",
+    confirm: "OK",
+    // Error
+    errorTitle: "\u274C Generation Failed",
+    errorSolutions: "\u{1F4A1} Solutions:",
+    retry: "Retry",
+    close: "Close",
+    // Error Suggestions
+    suggestionCheckApiKey: "Please check your API key in settings",
+    suggestionVerifyApiKey: "Please verify that your API key is entered correctly",
+    suggestionActivateApiKey: "Please ensure the API key is activated for this service",
+    suggestionWaitAndRetry: "Please wait a moment and try again",
+    suggestionCheckQuota: "Please check your API usage quota",
+    suggestionCheckInternet: "Please check your internet connection",
+    suggestionCheckVPN: "Please check your VPN or proxy settings",
+    suggestionTryDifferentStyle: "Please try a different style",
+    suggestionModifyContent: "Please modify the note content and try again",
+    suggestionContentMayBeSensitive: "The content may contain sensitive material",
+    suggestionAddContent: "Please add content to your note",
+    // Preview Modal
+    previewTitle: "\u{1F4DD} Prompt Preview",
+    previewPromptLabel: "Generated Prompt (Editable):",
+    previewCharacters: "characters",
+    previewTipsTitle: "\u{1F4A1} Tips:",
+    previewTip1: "You can edit the prompt to adjust the desired style",
+    previewTip2: "Adding specific colors, layouts, and elements will give better results",
+    previewTip3: 'Use the "Regenerate" button to create a new prompt',
+    previewGenerate: "\u{1F3A8} Generate Image",
+    previewRegenerate: "\u{1F504} Regenerate",
+    previewPromptModel: "\u{1F916} Prompt Model",
+    previewImageModel: "\u{1F5BC}\uFE0F Image Model",
+    previewStyle: "\u{1F4CA} Style"
+  },
+  ja: {
+    // Progress Modal
+    progressTitle: "\u{1F3A8} \u30CA\u30EC\u30C3\u30B8\u30DD\u30B9\u30BF\u30FC\u751F\u6210\u4E2D...",
+    estimatedTime: "\u23F1\uFE0F \u63A8\u5B9A\u6642\u9593\uFF1A\u7D0415\u301C30\u79D2",
+    cancel: "\u30AD\u30E3\u30F3\u30BB\u30EB",
+    // Progress Steps
+    stepAnalyzing: "\u30CE\u30FC\u30C8\u5206\u6790",
+    stepGeneratingPrompt: "\u30D7\u30ED\u30F3\u30D7\u30C8\u751F\u6210",
+    stepGeneratingImage: "\u753B\u50CF\u751F\u6210",
+    stepSaving: "\u30D5\u30A1\u30A4\u30EB\u4FDD\u5B58",
+    stepEmbedding: "\u30CE\u30FC\u30C8\u306B\u633F\u5165",
+    // Success
+    successTitle: "\u2705 \u30CA\u30EC\u30C3\u30B8\u30DD\u30B9\u30BF\u30FC\u4F5C\u6210\u5B8C\u4E86\uFF01",
+    successSaved: "\u{1F4C1} \u4FDD\u5B58\u5148",
+    confirm: "OK",
+    // Error
+    errorTitle: "\u274C \u751F\u6210\u5931\u6557",
+    errorSolutions: "\u{1F4A1} \u89E3\u6C7A\u65B9\u6CD5\uFF1A",
+    retry: "\u518D\u8A66\u884C",
+    close: "\u9589\u3058\u308B",
+    // Error Suggestions
+    suggestionCheckApiKey: "\u8A2D\u5B9A\u3067API\u30AD\u30FC\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044",
+    suggestionVerifyApiKey: "API\u30AD\u30FC\u304C\u6B63\u3057\u304F\u5165\u529B\u3055\u308C\u3066\u3044\u308B\u304B\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044",
+    suggestionActivateApiKey: "\u3053\u306E\u30B5\u30FC\u30D3\u30B9\u306EAPI\u30AD\u30FC\u304C\u6709\u52B9\u5316\u3055\u308C\u3066\u3044\u308B\u304B\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044",
+    suggestionWaitAndRetry: "\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044",
+    suggestionCheckQuota: "API\u4F7F\u7528\u91CF\u306E\u4E0A\u9650\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044",
+    suggestionCheckInternet: "\u30A4\u30F3\u30BF\u30FC\u30CD\u30C3\u30C8\u63A5\u7D9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044",
+    suggestionCheckVPN: "VPN\u307E\u305F\u306F\u30D7\u30ED\u30AD\u30B7\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044",
+    suggestionTryDifferentStyle: "\u5225\u306E\u30B9\u30BF\u30A4\u30EB\u3067\u8A66\u3057\u3066\u304F\u3060\u3055\u3044",
+    suggestionModifyContent: "\u30CE\u30FC\u30C8\u306E\u5185\u5BB9\u3092\u4FEE\u6B63\u3057\u3066\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044",
+    suggestionContentMayBeSensitive: "\u6A5F\u5BC6\u6027\u306E\u9AD8\u3044\u5185\u5BB9\u304C\u542B\u307E\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059",
+    suggestionAddContent: "\u30CE\u30FC\u30C8\u306B\u5185\u5BB9\u3092\u8FFD\u52A0\u3057\u3066\u304F\u3060\u3055\u3044",
+    // Preview Modal
+    previewTitle: "\u{1F4DD} \u30D7\u30ED\u30F3\u30D7\u30C8\u30D7\u30EC\u30D3\u30E5\u30FC",
+    previewPromptLabel: "\u751F\u6210\u3055\u308C\u305F\u30D7\u30ED\u30F3\u30D7\u30C8 (\u7DE8\u96C6\u53EF\u80FD):",
+    previewCharacters: "\u6587\u5B57",
+    previewTipsTitle: "\u{1F4A1} \u30D2\u30F3\u30C8:",
+    previewTip1: "\u30D7\u30ED\u30F3\u30D7\u30C8\u3092\u7DE8\u96C6\u3057\u3066\u5E0C\u671B\u306E\u30B9\u30BF\u30A4\u30EB\u306B\u8ABF\u6574\u3067\u304D\u307E\u3059",
+    previewTip2: "\u5177\u4F53\u7684\u306A\u8272\u3001\u30EC\u30A4\u30A2\u30A6\u30C8\u3001\u8981\u7D20\u3092\u8FFD\u52A0\u3059\u308B\u3068\u3001\u3088\u308A\u826F\u3044\u7D50\u679C\u304C\u5F97\u3089\u308C\u307E\u3059",
+    previewTip3: "\u300C\u518D\u751F\u6210\u300D\u30DC\u30BF\u30F3\u3067\u65B0\u3057\u3044\u30D7\u30ED\u30F3\u30D7\u30C8\u3092\u751F\u6210\u3067\u304D\u307E\u3059",
+    previewGenerate: "\u{1F3A8} \u753B\u50CF\u751F\u6210",
+    previewRegenerate: "\u{1F504} \u518D\u751F\u6210",
+    previewPromptModel: "\u{1F916} \u30D7\u30ED\u30F3\u30D7\u30C8\u30E2\u30C7\u30EB",
+    previewImageModel: "\u{1F5BC}\uFE0F \u753B\u50CF\u30E2\u30C7\u30EB",
+    previewStyle: "\u{1F4CA} \u30B9\u30BF\u30A4\u30EB"
+  },
+  zh: {
+    // Progress Modal
+    progressTitle: "\u{1F3A8} \u6B63\u5728\u751F\u6210\u77E5\u8BC6\u6D77\u62A5...",
+    estimatedTime: "\u23F1\uFE0F \u9884\u8BA1\u65F6\u95F4\uFF1A\u7EA615-30\u79D2",
+    cancel: "\u53D6\u6D88",
+    // Progress Steps
+    stepAnalyzing: "\u5206\u6790\u7B14\u8BB0",
+    stepGeneratingPrompt: "\u751F\u6210\u63D0\u793A\u8BCD",
+    stepGeneratingImage: "\u751F\u6210\u56FE\u7247",
+    stepSaving: "\u4FDD\u5B58\u6587\u4EF6",
+    stepEmbedding: "\u63D2\u5165\u7B14\u8BB0",
+    // Success
+    successTitle: "\u2705 \u77E5\u8BC6\u6D77\u62A5\u521B\u5EFA\u5B8C\u6210\uFF01",
+    successSaved: "\u{1F4C1} \u4FDD\u5B58\u4F4D\u7F6E",
+    confirm: "\u786E\u8BA4",
+    // Error
+    errorTitle: "\u274C \u751F\u6210\u5931\u8D25",
+    errorSolutions: "\u{1F4A1} \u89E3\u51B3\u65B9\u6CD5\uFF1A",
+    retry: "\u91CD\u8BD5",
+    close: "\u5173\u95ED",
+    // Error Suggestions
+    suggestionCheckApiKey: "\u8BF7\u5728\u8BBE\u7F6E\u4E2D\u68C0\u67E5API\u5BC6\u94A5",
+    suggestionVerifyApiKey: "\u8BF7\u786E\u8BA4API\u5BC6\u94A5\u8F93\u5165\u6B63\u786E",
+    suggestionActivateApiKey: "\u8BF7\u786E\u8BA4\u8BE5\u670D\u52A1\u7684API\u5BC6\u94A5\u5DF2\u6FC0\u6D3B",
+    suggestionWaitAndRetry: "\u8BF7\u7A0D\u540E\u91CD\u8BD5",
+    suggestionCheckQuota: "\u8BF7\u68C0\u67E5API\u4F7F\u7528\u914D\u989D",
+    suggestionCheckInternet: "\u8BF7\u68C0\u67E5\u7F51\u7EDC\u8FDE\u63A5",
+    suggestionCheckVPN: "\u8BF7\u68C0\u67E5VPN\u6216\u4EE3\u7406\u8BBE\u7F6E",
+    suggestionTryDifferentStyle: "\u8BF7\u5C1D\u8BD5\u5176\u4ED6\u98CE\u683C",
+    suggestionModifyContent: "\u8BF7\u4FEE\u6539\u7B14\u8BB0\u5185\u5BB9\u540E\u91CD\u8BD5",
+    suggestionContentMayBeSensitive: "\u5185\u5BB9\u53EF\u80FD\u5305\u542B\u654F\u611F\u4FE1\u606F",
+    suggestionAddContent: "\u8BF7\u5728\u7B14\u8BB0\u4E2D\u6DFB\u52A0\u5185\u5BB9",
+    // Preview Modal
+    previewTitle: "\u{1F4DD} \u63D0\u793A\u8BCD\u9884\u89C8",
+    previewPromptLabel: "\u751F\u6210\u7684\u63D0\u793A\u8BCD (\u53EF\u7F16\u8F91):",
+    previewCharacters: "\u5B57\u7B26",
+    previewTipsTitle: "\u{1F4A1} \u63D0\u793A:",
+    previewTip1: "\u60A8\u53EF\u4EE5\u7F16\u8F91\u63D0\u793A\u8BCD\u4EE5\u8C03\u6574\u6240\u9700\u6837\u5F0F",
+    previewTip2: "\u6DFB\u52A0\u5177\u4F53\u7684\u989C\u8272\u3001\u5E03\u5C40\u548C\u5143\u7D20\u5C06\u83B7\u5F97\u66F4\u597D\u7684\u6548\u679C",
+    previewTip3: '\u4F7F\u7528"\u91CD\u65B0\u751F\u6210"\u6309\u94AE\u521B\u5EFA\u65B0\u7684\u63D0\u793A\u8BCD',
+    previewGenerate: "\u{1F3A8} \u751F\u6210\u56FE\u7247",
+    previewRegenerate: "\u{1F504} \u91CD\u65B0\u751F\u6210",
+    previewPromptModel: "\u{1F916} \u63D0\u793A\u8BCD\u6A21\u578B",
+    previewImageModel: "\u{1F5BC}\uFE0F \u56FE\u7247\u6A21\u578B",
+    previewStyle: "\u{1F4CA} \u98CE\u683C"
+  },
+  es: {
+    // Progress Modal
+    progressTitle: "\u{1F3A8} Generando P\xF3ster de Conocimiento...",
+    estimatedTime: "\u23F1\uFE0F Tiempo estimado: aproximadamente 15-30 segundos",
+    cancel: "Cancelar",
+    // Progress Steps
+    stepAnalyzing: "Analizando nota",
+    stepGeneratingPrompt: "Generando prompt",
+    stepGeneratingImage: "Generando imagen",
+    stepSaving: "Guardando archivo",
+    stepEmbedding: "Insertando en nota",
+    // Success
+    successTitle: "\u2705 \xA1P\xF3ster de Conocimiento Creado!",
+    successSaved: "\u{1F4C1} Guardado en",
+    confirm: "Aceptar",
+    // Error
+    errorTitle: "\u274C Generaci\xF3n Fallida",
+    errorSolutions: "\u{1F4A1} Soluciones:",
+    retry: "Reintentar",
+    close: "Cerrar",
+    // Error Suggestions
+    suggestionCheckApiKey: "Por favor, verifica tu clave API en la configuraci\xF3n",
+    suggestionVerifyApiKey: "Por favor, verifica que tu clave API est\xE9 ingresada correctamente",
+    suggestionActivateApiKey: "Por favor, aseg\xFArate de que la clave API est\xE9 activada para este servicio",
+    suggestionWaitAndRetry: "Por favor, espera un momento e int\xE9ntalo de nuevo",
+    suggestionCheckQuota: "Por favor, verifica tu cuota de uso de API",
+    suggestionCheckInternet: "Por favor, verifica tu conexi\xF3n a internet",
+    suggestionCheckVPN: "Por favor, verifica tu configuraci\xF3n de VPN o proxy",
+    suggestionTryDifferentStyle: "Por favor, intenta con un estilo diferente",
+    suggestionModifyContent: "Por favor, modifica el contenido de la nota e int\xE9ntalo de nuevo",
+    suggestionContentMayBeSensitive: "El contenido puede contener material sensible",
+    suggestionAddContent: "Por favor, agrega contenido a tu nota",
+    // Preview Modal
+    previewTitle: "\u{1F4DD} Vista Previa del Prompt",
+    previewPromptLabel: "Prompt Generado (Editable):",
+    previewCharacters: "caracteres",
+    previewTipsTitle: "\u{1F4A1} Consejos:",
+    previewTip1: "Puedes editar el prompt para ajustar el estilo deseado",
+    previewTip2: "Agregar colores, dise\xF1os y elementos espec\xEDficos dar\xE1 mejores resultados",
+    previewTip3: 'Usa el bot\xF3n "Regenerar" para crear un nuevo prompt',
+    previewGenerate: "\u{1F3A8} Generar Imagen",
+    previewRegenerate: "\u{1F504} Regenerar",
+    previewPromptModel: "\u{1F916} Modelo de Prompt",
+    previewImageModel: "\u{1F5BC}\uFE0F Modelo de Imagen",
+    previewStyle: "\u{1F4CA} Estilo"
+  },
+  fr: {
+    // Progress Modal
+    progressTitle: "\u{1F3A8} G\xE9n\xE9ration de l'Affiche de Connaissances...",
+    estimatedTime: "\u23F1\uFE0F Temps estim\xE9 : environ 15-30 secondes",
+    cancel: "Annuler",
+    // Progress Steps
+    stepAnalyzing: "Analyse de la note",
+    stepGeneratingPrompt: "G\xE9n\xE9ration du prompt",
+    stepGeneratingImage: "G\xE9n\xE9ration de l'image",
+    stepSaving: "Enregistrement du fichier",
+    stepEmbedding: "Insertion dans la note",
+    // Success
+    successTitle: "\u2705 Affiche de Connaissances Cr\xE9\xE9e !",
+    successSaved: "\u{1F4C1} Enregistr\xE9 dans",
+    confirm: "OK",
+    // Error
+    errorTitle: "\u274C \xC9chec de la G\xE9n\xE9ration",
+    errorSolutions: "\u{1F4A1} Solutions :",
+    retry: "R\xE9essayer",
+    close: "Fermer",
+    // Error Suggestions
+    suggestionCheckApiKey: "Veuillez v\xE9rifier votre cl\xE9 API dans les param\xE8tres",
+    suggestionVerifyApiKey: "Veuillez v\xE9rifier que votre cl\xE9 API est correctement saisie",
+    suggestionActivateApiKey: "Veuillez vous assurer que la cl\xE9 API est activ\xE9e pour ce service",
+    suggestionWaitAndRetry: "Veuillez attendre un moment et r\xE9essayer",
+    suggestionCheckQuota: "Veuillez v\xE9rifier votre quota d'utilisation de l'API",
+    suggestionCheckInternet: "Veuillez v\xE9rifier votre connexion Internet",
+    suggestionCheckVPN: "Veuillez v\xE9rifier vos param\xE8tres VPN ou proxy",
+    suggestionTryDifferentStyle: "Veuillez essayer un style diff\xE9rent",
+    suggestionModifyContent: "Veuillez modifier le contenu de la note et r\xE9essayer",
+    suggestionContentMayBeSensitive: "Le contenu peut contenir du mat\xE9riel sensible",
+    suggestionAddContent: "Veuillez ajouter du contenu \xE0 votre note",
+    // Preview Modal
+    previewTitle: "\u{1F4DD} Aper\xE7u du Prompt",
+    previewPromptLabel: "Prompt G\xE9n\xE9r\xE9 (Modifiable):",
+    previewCharacters: "caract\xE8res",
+    previewTipsTitle: "\u{1F4A1} Conseils:",
+    previewTip1: "Vous pouvez modifier le prompt pour ajuster le style souhait\xE9",
+    previewTip2: "Ajouter des couleurs, des mises en page et des \xE9l\xE9ments sp\xE9cifiques donnera de meilleurs r\xE9sultats",
+    previewTip3: 'Utilisez le bouton "R\xE9g\xE9n\xE9rer" pour cr\xE9er un nouveau prompt',
+    previewGenerate: "\u{1F3A8} G\xE9n\xE9rer l'Image",
+    previewRegenerate: "\u{1F504} R\xE9g\xE9n\xE9rer",
+    previewPromptModel: "\u{1F916} Mod\xE8le de Prompt",
+    previewImageModel: "\u{1F5BC}\uFE0F Mod\xE8le d'Image",
+    previewStyle: "\u{1F4CA} Style"
+  },
+  de: {
+    // Progress Modal
+    progressTitle: "\u{1F3A8} Wissensposter wird erstellt...",
+    estimatedTime: "\u23F1\uFE0F Gesch\xE4tzte Zeit: etwa 15-30 Sekunden",
+    cancel: "Abbrechen",
+    // Progress Steps
+    stepAnalyzing: "Notiz analysieren",
+    stepGeneratingPrompt: "Prompt generieren",
+    stepGeneratingImage: "Bild generieren",
+    stepSaving: "Datei speichern",
+    stepEmbedding: "In Notiz einf\xFCgen",
+    // Success
+    successTitle: "\u2705 Wissensposter erstellt!",
+    successSaved: "\u{1F4C1} Gespeichert in",
+    confirm: "OK",
+    // Error
+    errorTitle: "\u274C Generierung fehlgeschlagen",
+    errorSolutions: "\u{1F4A1} L\xF6sungen:",
+    retry: "Wiederholen",
+    close: "Schlie\xDFen",
+    // Error Suggestions
+    suggestionCheckApiKey: "Bitte \xFCberpr\xFCfen Sie Ihren API-Schl\xFCssel in den Einstellungen",
+    suggestionVerifyApiKey: "Bitte \xFCberpr\xFCfen Sie, ob Ihr API-Schl\xFCssel korrekt eingegeben wurde",
+    suggestionActivateApiKey: "Bitte stellen Sie sicher, dass der API-Schl\xFCssel f\xFCr diesen Dienst aktiviert ist",
+    suggestionWaitAndRetry: "Bitte warten Sie einen Moment und versuchen Sie es erneut",
+    suggestionCheckQuota: "Bitte \xFCberpr\xFCfen Sie Ihr API-Nutzungskontingent",
+    suggestionCheckInternet: "Bitte \xFCberpr\xFCfen Sie Ihre Internetverbindung",
+    suggestionCheckVPN: "Bitte \xFCberpr\xFCfen Sie Ihre VPN- oder Proxy-Einstellungen",
+    suggestionTryDifferentStyle: "Bitte versuchen Sie einen anderen Stil",
+    suggestionModifyContent: "Bitte \xE4ndern Sie den Notizinhalt und versuchen Sie es erneut",
+    suggestionContentMayBeSensitive: "Der Inhalt kann sensibles Material enthalten",
+    suggestionAddContent: "Bitte f\xFCgen Sie Inhalt zu Ihrer Notiz hinzu",
+    // Preview Modal
+    previewTitle: "\u{1F4DD} Prompt-Vorschau",
+    previewPromptLabel: "Generierter Prompt (Bearbeitbar):",
+    previewCharacters: "Zeichen",
+    previewTipsTitle: "\u{1F4A1} Tipps:",
+    previewTip1: "Sie k\xF6nnen den Prompt bearbeiten, um den gew\xFCnschten Stil anzupassen",
+    previewTip2: "Das Hinzuf\xFCgen spezifischer Farben, Layouts und Elemente f\xFChrt zu besseren Ergebnissen",
+    previewTip3: 'Verwenden Sie die Schaltfl\xE4che "Regenerieren", um einen neuen Prompt zu erstellen',
+    previewGenerate: "\u{1F3A8} Bild generieren",
+    previewRegenerate: "\u{1F504} Regenerieren",
+    previewPromptModel: "\u{1F916} Prompt-Modell",
+    previewImageModel: "\u{1F5BC}\uFE0F Bildmodell",
+    previewStyle: "\u{1F4CA} Stil"
+  }
+};
+function getMessages(language) {
+  return MESSAGES[language] || MESSAGES.en;
+}
+
+// src/progressModal.ts
 var ProgressModal = class extends import_obsidian5.Modal {
-  constructor(app) {
+  constructor(app, language = "en") {
     super(app);
     this.onCancel = null;
     this.isCancelled = false;
+    this.steps = [];
+    this.messages = getMessages(language);
     this.steps = [
-      { key: "analyzing", label: "\uB178\uD2B8 \uBD84\uC11D", icon: "\u{1F4C4}" },
-      { key: "generating-prompt", label: "\uD504\uB86C\uD504\uD2B8 \uC0DD\uC131", icon: "\u{1F916}" },
-      { key: "generating-image", label: "\uC774\uBBF8\uC9C0 \uC0DD\uC131", icon: "\u{1F3A8}" },
-      { key: "saving", label: "\uD30C\uC77C \uC800\uC7A5", icon: "\u{1F4BE}" },
-      { key: "embedding", label: "\uB178\uD2B8\uC5D0 \uC0BD\uC785", icon: "\u{1F4CE}" }
+      { key: "analyzing", label: this.messages.stepAnalyzing, icon: "\u{1F4C4}" },
+      { key: "generating-prompt", label: this.messages.stepGeneratingPrompt, icon: "\u{1F916}" },
+      { key: "generating-image", label: this.messages.stepGeneratingImage, icon: "\u{1F3A8}" },
+      { key: "saving", label: this.messages.stepSaving, icon: "\u{1F4BE}" },
+      { key: "embedding", label: this.messages.stepEmbedding, icon: "\u{1F4CE}" }
     ];
   }
   onOpen() {
     const { contentEl } = this;
     contentEl.addClass("nanobanana-progress-modal");
     contentEl.createEl("h2", {
-      text: "\u{1F3A8} Knowledge Poster \uC0DD\uC131 \uC911...",
+      text: this.messages.progressTitle,
       cls: "nanobanana-progress-title"
     });
     this.progressContainer = contentEl.createDiv({ cls: "nanobanana-progress-container" });
@@ -720,11 +1053,11 @@ var ProgressModal = class extends import_obsidian5.Modal {
     this.renderSteps();
     contentEl.createDiv({
       cls: "nanobanana-estimated-time",
-      text: "\u23F1\uFE0F \uC608\uC0C1 \uC18C\uC694 \uC2DC\uAC04: \uC57D 15-30\uCD08"
+      text: this.messages.estimatedTime
     });
     const buttonContainer = contentEl.createDiv({ cls: "nanobanana-button-container" });
     this.cancelButton = buttonContainer.createEl("button", {
-      text: "\uCDE8\uC18C",
+      text: this.messages.cancel,
       cls: "nanobanana-cancel-button"
     });
     this.cancelButton.addEventListener("click", () => {
@@ -774,7 +1107,7 @@ var ProgressModal = class extends import_obsidian5.Modal {
     contentEl.empty();
     contentEl.addClass("nanobanana-error-state");
     contentEl.createEl("h2", {
-      text: "\u274C \uC0DD\uC131 \uC2E4\uD328",
+      text: this.messages.errorTitle,
       cls: "nanobanana-error-title"
     });
     const errorBox = contentEl.createDiv({ cls: "nanobanana-error-box" });
@@ -788,7 +1121,7 @@ var ProgressModal = class extends import_obsidian5.Modal {
     const suggestions = this.getErrorSuggestions(error);
     if (suggestions.length > 0) {
       const suggestionBox = contentEl.createDiv({ cls: "nanobanana-suggestions" });
-      suggestionBox.createEl("p", { text: "\u{1F4A1} \uD574\uACB0 \uBC29\uBC95:" });
+      suggestionBox.createEl("p", { text: this.messages.errorSolutions });
       const list = suggestionBox.createEl("ul");
       for (const suggestion of suggestions) {
         list.createEl("li", { text: suggestion });
@@ -797,7 +1130,7 @@ var ProgressModal = class extends import_obsidian5.Modal {
     const buttonContainer = contentEl.createDiv({ cls: "nanobanana-button-container" });
     if (error.retryable) {
       const retryButton = buttonContainer.createEl("button", {
-        text: "\uB2E4\uC2DC \uC2DC\uB3C4",
+        text: this.messages.retry,
         cls: "nanobanana-retry-button mod-cta"
       });
       retryButton.addEventListener("click", () => {
@@ -807,7 +1140,7 @@ var ProgressModal = class extends import_obsidian5.Modal {
       });
     }
     const closeButton = buttonContainer.createEl("button", {
-      text: "\uB2EB\uAE30",
+      text: this.messages.close,
       cls: "nanobanana-close-button"
     });
     closeButton.addEventListener("click", () => this.close());
@@ -817,14 +1150,14 @@ var ProgressModal = class extends import_obsidian5.Modal {
     contentEl.empty();
     contentEl.addClass("nanobanana-success-state");
     contentEl.createEl("h2", {
-      text: "\u2705 Knowledge Poster \uC0DD\uC131 \uC644\uB8CC!",
+      text: this.messages.successTitle,
       cls: "nanobanana-success-title"
     });
     const infoBox = contentEl.createDiv({ cls: "nanobanana-success-box" });
-    infoBox.createEl("p", { text: `\u{1F4C1} \uC800\uC7A5 \uC704\uCE58: ${imagePath}` });
+    infoBox.createEl("p", { text: `${this.messages.successSaved}: ${imagePath}` });
     const buttonContainer = contentEl.createDiv({ cls: "nanobanana-button-container" });
     const closeButton = buttonContainer.createEl("button", {
-      text: "\uD655\uC778",
+      text: this.messages.confirm,
       cls: "nanobanana-close-button mod-cta"
     });
     closeButton.addEventListener("click", () => this.close());
@@ -838,33 +1171,33 @@ var ProgressModal = class extends import_obsidian5.Modal {
     switch (error.type) {
       case "INVALID_API_KEY":
         return [
-          "\uC124\uC815\uC5D0\uC11C API \uD0A4\uB97C \uD655\uC778\uD574\uC8FC\uC138\uC694",
-          "API \uD0A4\uAC00 \uC62C\uBC14\uB974\uAC8C \uC785\uB825\uB418\uC5C8\uB294\uC9C0 \uD655\uC778\uD574\uC8FC\uC138\uC694",
-          "\uD574\uB2F9 \uC11C\uBE44\uC2A4\uC758 API \uD0A4\uAC00 \uD65C\uC131\uD654\uB418\uC5B4 \uC788\uB294\uC9C0 \uD655\uC778\uD574\uC8FC\uC138\uC694"
+          this.messages.suggestionCheckApiKey,
+          this.messages.suggestionVerifyApiKey,
+          this.messages.suggestionActivateApiKey
         ];
       case "RATE_LIMIT":
         return [
-          "\uC7A0\uC2DC \uD6C4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574\uC8FC\uC138\uC694",
-          "API \uC0AC\uC6A9\uB7C9 \uD55C\uB3C4\uB97C \uD655\uC778\uD574\uC8FC\uC138\uC694"
+          this.messages.suggestionWaitAndRetry,
+          this.messages.suggestionCheckQuota
         ];
       case "NETWORK_ERROR":
         return [
-          "\uC778\uD130\uB137 \uC5F0\uACB0\uC744 \uD655\uC778\uD574\uC8FC\uC138\uC694",
-          "VPN\uC774\uB098 \uD504\uB85D\uC2DC \uC124\uC815\uC744 \uD655\uC778\uD574\uC8FC\uC138\uC694"
+          this.messages.suggestionCheckInternet,
+          this.messages.suggestionCheckVPN
         ];
       case "GENERATION_FAILED":
         return [
-          "\uB2E4\uB978 \uC2A4\uD0C0\uC77C\uB85C \uC2DC\uB3C4\uD574\uBCF4\uC138\uC694",
-          "\uB178\uD2B8 \uB0B4\uC6A9\uC744 \uC218\uC815\uD558\uACE0 \uB2E4\uC2DC \uC2DC\uB3C4\uD574\uC8FC\uC138\uC694"
+          this.messages.suggestionTryDifferentStyle,
+          this.messages.suggestionModifyContent
         ];
       case "CONTENT_FILTERED":
         return [
-          "\uB178\uD2B8 \uB0B4\uC6A9\uC744 \uC218\uC815\uD574\uC8FC\uC138\uC694",
-          "\uBBFC\uAC10\uD55C \uB0B4\uC6A9\uC774 \uD3EC\uD568\uB418\uC5B4 \uC788\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4"
+          this.messages.suggestionModifyContent,
+          this.messages.suggestionContentMayBeSensitive
         ];
       case "NO_CONTENT":
         return [
-          "\uB178\uD2B8\uC5D0 \uB0B4\uC6A9\uC744 \uCD94\uAC00\uD574\uC8FC\uC138\uC694"
+          this.messages.suggestionAddContent
         ];
       default:
         return [];
@@ -882,35 +1215,36 @@ var ProgressModal = class extends import_obsidian5.Modal {
 // src/previewModal.ts
 var import_obsidian6 = require("obsidian");
 var PreviewModal = class extends import_obsidian6.Modal {
-  constructor(app, prompt, settings, onConfirm) {
+  constructor(app, prompt, settings, onConfirm, language = "en") {
     super(app);
     this.prompt = prompt;
     this.settings = settings;
     this.onConfirm = onConfirm;
+    this.messages = getMessages(language);
   }
   onOpen() {
     const { contentEl } = this;
     contentEl.addClass("nanobanana-preview-modal");
     contentEl.createEl("h2", {
-      text: "\u{1F4DD} \uD504\uB86C\uD504\uD2B8 \uBBF8\uB9AC\uBCF4\uAE30",
+      text: this.messages.previewTitle,
       cls: "nanobanana-preview-title"
     });
     const infoSection = contentEl.createDiv({ cls: "nanobanana-preview-info" });
     infoSection.createDiv({
       cls: "nanobanana-preview-info-item",
-      text: `\u{1F916} \uD504\uB86C\uD504\uD2B8 \uBAA8\uB378: ${PROVIDER_CONFIGS[this.settings.selectedProvider].name} - ${this.settings.promptModel}`
+      text: `${this.messages.previewPromptModel}: ${PROVIDER_CONFIGS[this.settings.selectedProvider].name} - ${this.settings.promptModel}`
     });
     infoSection.createDiv({
       cls: "nanobanana-preview-info-item",
-      text: `\u{1F5BC}\uFE0F \uC774\uBBF8\uC9C0 \uBAA8\uB378: ${this.settings.imageModel}`
+      text: `${this.messages.previewImageModel}: ${this.settings.imageModel}`
     });
     infoSection.createDiv({
       cls: "nanobanana-preview-info-item",
-      text: `\u{1F4CA} \uC2A4\uD0C0\uC77C: ${IMAGE_STYLES[this.settings.imageStyle]}`
+      text: `${this.messages.previewStyle}: ${IMAGE_STYLES[this.settings.imageStyle]}`
     });
     const textareaContainer = contentEl.createDiv({ cls: "nanobanana-textarea-container" });
     textareaContainer.createEl("label", {
-      text: "\uC0DD\uC131\uB41C \uD504\uB86C\uD504\uD2B8 (\uC218\uC815 \uAC00\uB2A5):",
+      text: this.messages.previewPromptLabel,
       cls: "nanobanana-textarea-label"
     });
     this.promptTextarea = textareaContainer.createEl("textarea", {
@@ -919,19 +1253,19 @@ var PreviewModal = class extends import_obsidian6.Modal {
     this.promptTextarea.value = this.prompt;
     this.promptTextarea.rows = 10;
     const charCount = textareaContainer.createDiv({ cls: "nanobanana-char-count" });
-    charCount.setText(`${this.prompt.length} \uC790`);
+    charCount.setText(`${this.prompt.length} ${this.messages.previewCharacters}`);
     this.promptTextarea.addEventListener("input", () => {
-      charCount.setText(`${this.promptTextarea.value.length} \uC790`);
+      charCount.setText(`${this.promptTextarea.value.length} ${this.messages.previewCharacters}`);
     });
     const tipsSection = contentEl.createDiv({ cls: "nanobanana-tips" });
-    tipsSection.createEl("p", { text: "\u{1F4A1} \uD301:" });
+    tipsSection.createEl("p", { text: this.messages.previewTipsTitle });
     const tipsList = tipsSection.createEl("ul");
-    tipsList.createEl("li", { text: "\uD504\uB86C\uD504\uD2B8\uB97C \uC218\uC815\uD558\uC5EC \uC6D0\uD558\uB294 \uC2A4\uD0C0\uC77C\uB85C \uC870\uC815\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4" });
-    tipsList.createEl("li", { text: "\uAD6C\uCCB4\uC801\uC778 \uC0C9\uC0C1, \uB808\uC774\uC544\uC6C3, \uC694\uC18C\uB97C \uCD94\uAC00\uD558\uBA74 \uB354 \uC88B\uC740 \uACB0\uACFC\uB97C \uC5BB\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4" });
-    tipsList.createEl("li", { text: '"\uB2E4\uC2DC \uC0DD\uC131" \uBC84\uD2BC\uC73C\uB85C \uC0C8\uB85C\uC6B4 \uD504\uB86C\uD504\uD2B8\uB97C \uC0DD\uC131\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4' });
+    tipsList.createEl("li", { text: this.messages.previewTip1 });
+    tipsList.createEl("li", { text: this.messages.previewTip2 });
+    tipsList.createEl("li", { text: this.messages.previewTip3 });
     const buttonContainer = contentEl.createDiv({ cls: "nanobanana-button-container" });
     const generateButton = buttonContainer.createEl("button", {
-      text: "\u{1F3A8} \uC774\uBBF8\uC9C0 \uC0DD\uC131",
+      text: this.messages.previewGenerate,
       cls: "mod-cta"
     });
     generateButton.addEventListener("click", () => {
@@ -943,7 +1277,7 @@ var PreviewModal = class extends import_obsidian6.Modal {
       this.close();
     });
     const regenerateButton = buttonContainer.createEl("button", {
-      text: "\u{1F504} \uB2E4\uC2DC \uC0DD\uC131"
+      text: this.messages.previewRegenerate
     });
     regenerateButton.addEventListener("click", () => {
       this.onConfirm({
@@ -954,7 +1288,7 @@ var PreviewModal = class extends import_obsidian6.Modal {
       this.close();
     });
     const cancelButton = buttonContainer.createEl("button", {
-      text: "\uCDE8\uC18C"
+      text: this.messages.cancel
     });
     cancelButton.addEventListener("click", () => {
       this.onConfirm({
