@@ -40,7 +40,7 @@ var DEFAULT_SETTINGS = {
   selectedProvider: "google",
   promptModel: "gemini-2.5-flash",
   // Image Generation
-  imageModel: "gemini-2.5-flash",
+  imageModel: "gemini-3-pro-image-preview",
   imageStyle: "infographic",
   // UX Settings
   showPreviewBeforeGeneration: true,
@@ -202,7 +202,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
     );
     containerEl.createEl("h2", { text: "\u{1F5BC}\uFE0F Image Generation" });
     new import_obsidian.Setting(containerEl).setName("Image Model").setDesc("Google Gemini model for image generation. Must support image output.").addText(
-      (text) => text.setPlaceholder("gemini-2.5-flash").setValue(this.plugin.settings.imageModel).onChange(async (value) => {
+      (text) => text.setPlaceholder("gemini-3-pro-image-preview").setValue(this.plugin.settings.imageModel).onChange(async (value) => {
         this.plugin.settings.imageModel = value;
         await this.plugin.saveSettings();
       })

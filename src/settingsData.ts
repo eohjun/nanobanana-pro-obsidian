@@ -12,7 +12,7 @@ export const DEFAULT_SETTINGS: NanoBananaSettings = {
   promptModel: 'gemini-2.5-flash',
 
   // Image Generation
-  imageModel: 'gemini-2.5-flash',
+  imageModel: 'gemini-3-pro-image-preview',
   imageStyle: 'infographic',
 
   // UX Settings

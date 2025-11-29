@@ -138,7 +138,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       .setName('Image Model')
       .setDesc('Google Gemini model for image generation. Must support image output.')
       .addText(text => text
-        .setPlaceholder('gemini-2.5-flash')
+        .setPlaceholder('gemini-3-pro-image-preview')
         .setValue(this.plugin.settings.imageModel)
         .onChange(async (value) => {
           this.plugin.settings.imageModel = value;
