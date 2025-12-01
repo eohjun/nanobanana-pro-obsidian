@@ -450,9 +450,8 @@ ${content}` }
 
 ${content}` }
         ],
-        max_tokens: 1e3,
-        // Restored from v1.0.1 - was working fine
         temperature: 0.7
+        // max_tokens removed - let API use default/unlimited
       })
     });
     if (response.status !== 200) {

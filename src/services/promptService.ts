@@ -187,8 +187,8 @@ export class PromptService {
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: `Create an image prompt for the following content:\n\n${content}` }
         ],
-        max_tokens: 1000,  // Restored from v1.0.1 - was working fine
         temperature: 0.7
+        // max_tokens removed - let API use default/unlimited
       })
     });
 
