@@ -436,6 +436,12 @@ ${content}` }
   async callXAI(model, apiKey, content) {
     var _a, _b, _c, _d;
     console.log("xAI API call - Model:", model);
+    const MAX_CONTENT_CHARS = 12e3;
+    let truncatedContent = content;
+    if (content.length > MAX_CONTENT_CHARS) {
+      truncatedContent = content.substring(0, MAX_CONTENT_CHARS) + "\n\n[Content truncated for API limits...]";
+      console.log(`xAI: Content truncated from ${content.length} to ${MAX_CONTENT_CHARS} characters`);
+    }
     try {
       const response = await (0, import_obsidian2.requestUrl)({
         url: "https://api.x.ai/v1/chat/completions",
@@ -450,7 +456,7 @@ ${content}` }
             { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content: `Create an image prompt for the following content:
 
-${content}` }
+${truncatedContent}` }
           ],
           max_tokens: 1e3,
           temperature: 0.7
@@ -469,7 +475,16 @@ ${content}` }
       }
       return generatedText;
     } catch (error) {
-      console.error("xAI API call failed:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("xAI API call failed:", errorMessage);
+      if (errorMessage.includes("429") || errorMessage.toLowerCase().includes("rate limit")) {
+        console.error("xAI Rate Limit Details - Check your tier limits at https://console.x.ai");
+        throw this.createError(
+          "RATE_LIMIT",
+          "xAI rate limit exceeded. Your tier may have low token limits. Try: 1) Wait 1 minute, 2) Use a shorter note, 3) Check your tier at console.x.ai",
+          false
+        );
+      }
       throw error;
     }
   }
@@ -487,6 +502,13 @@ ${content}` }
   }
   handleApiError(error, provider) {
     const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes("status 429") || errorMessage.includes("429")) {
+      console.warn(`${PROVIDER_CONFIGS[provider].name} rate limit detected from exception`);
+      return this.createError("RATE_LIMIT", "API rate limit exceeded. Please wait a few minutes and try again.", false);
+    }
+    if (errorMessage.includes("status 401") || errorMessage.includes("status 403")) {
+      return this.createError("INVALID_API_KEY", `Invalid ${PROVIDER_CONFIGS[provider].name} API key`);
+    }
     if (errorMessage.includes("net::") || errorMessage.includes("network")) {
       return this.createError("NETWORK_ERROR", "Network connection error. Check your internet connection.", true);
     }
