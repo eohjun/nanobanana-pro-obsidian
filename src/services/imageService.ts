@@ -11,7 +11,8 @@ export class ImageService {
     apiKey: string,
     model: string,
     style: ImageStyle,
-    preferredLanguage: PreferredLanguage
+    preferredLanguage: PreferredLanguage,
+    imageSize: string = '4K'
   ): Promise<ImageGenerationResult> {
     if (!apiKey) {
       throw this.createError('INVALID_API_KEY', 'Google API key is not configured');
@@ -53,7 +54,10 @@ export class ImageService {
             }]
           }],
           generationConfig: {
-            responseModalities: ['TEXT', 'IMAGE']
+            responseModalities: ['TEXT', 'IMAGE'],
+            imageConfig: {
+              imageSize: imageSize
+            }
           },
           safetySettings: [
             { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },

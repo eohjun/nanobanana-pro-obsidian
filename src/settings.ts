@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import NanoBananaPlugin from './main';
-import { AIProvider, ImageStyle, PreferredLanguage, PROVIDER_CONFIGS, IMAGE_STYLES, LANGUAGE_NAMES } from './types';
+import { AIProvider, ImageStyle, ImageSize, PreferredLanguage, PROVIDER_CONFIGS, IMAGE_STYLES, LANGUAGE_NAMES } from './types';
 
 export class NanoBananaSettingTab extends PluginSettingTab {
   plugin: NanoBananaPlugin;
@@ -160,6 +160,22 @@ export class NanoBananaSettingTab extends PluginSettingTab {
         .setValue(this.plugin.settings.imageStyle)
         .onChange(async (value: ImageStyle) => {
           this.plugin.settings.imageStyle = value;
+          await this.plugin.saveSettings();
+        })
+      );
+
+    new Setting(containerEl)
+      .setName('Image Resolution')
+      .setDesc('Higher resolution = better quality (especially for Korean text). 4K recommended for best results.')
+      .addDropdown(dropdown => dropdown
+        .addOptions({
+          '1K': '1K - Standard Quality',
+          '2K': '2K - High Quality',
+          '4K': '4K - Ultra HD Quality (Recommended) ⭐'
+        })
+        .setValue(this.plugin.settings.imageSize)
+        .onChange(async (value: ImageSize) => {
+          this.plugin.settings.imageSize = value;
           await this.plugin.saveSettings();
         })
       );

@@ -42,6 +42,7 @@ var DEFAULT_SETTINGS = {
   // Image Generation
   imageModel: "gemini-3-pro-image-preview",
   imageStyle: "infographic",
+  imageSize: "4K",
   preferredLanguage: "ko",
   // UX Settings
   showPreviewBeforeGeneration: true,
@@ -219,6 +220,16 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         "timeline": "\u{1F4C5} Timeline - Progression and milestones"
       }).setValue(this.plugin.settings.imageStyle).onChange(async (value) => {
         this.plugin.settings.imageStyle = value;
+        await this.plugin.saveSettings();
+      })
+    );
+    new import_obsidian.Setting(containerEl).setName("Image Resolution").setDesc("Higher resolution = better quality (especially for Korean text). 4K recommended for best results.").addDropdown(
+      (dropdown) => dropdown.addOptions({
+        "1K": "1K - Standard Quality",
+        "2K": "2K - High Quality",
+        "4K": "4K - Ultra HD Quality (Recommended) \u2B50"
+      }).setValue(this.plugin.settings.imageSize).onChange(async (value) => {
+        this.plugin.settings.imageSize = value;
         await this.plugin.saveSettings();
       })
     );
@@ -510,7 +521,7 @@ var ImageService = class {
   /**
    * Generate an infographic image using Google Gemini
    */
-  async generateImage(prompt, apiKey, model, style, preferredLanguage) {
+  async generateImage(prompt, apiKey, model, style, preferredLanguage, imageSize = "4K") {
     if (!apiKey) {
       throw this.createError("INVALID_API_KEY", "Google API key is not configured");
     }
@@ -542,7 +553,10 @@ var ImageService = class {
             }]
           }],
           generationConfig: {
-            responseModalities: ["TEXT", "IMAGE"]
+            responseModalities: ["TEXT", "IMAGE"],
+            imageConfig: {
+              imageSize
+            }
           },
           safetySettings: [
             { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
@@ -1478,7 +1492,8 @@ ${finalPrompt}`;
           this.settings.googleApiKey,
           this.settings.imageModel,
           this.settings.imageStyle,
-          this.settings.preferredLanguage
+          this.settings.preferredLanguage,
+          this.settings.imageSize
         );
       });
       this.updateProgress(progressModal, {
@@ -1600,7 +1615,8 @@ ${finalPrompt}`;
           this.settings.googleApiKey,
           this.settings.imageModel,
           this.settings.imageStyle,
-          this.settings.preferredLanguage
+          this.settings.preferredLanguage,
+          this.settings.imageSize
         );
       });
       this.updateProgress(progressModal, {

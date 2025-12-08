@@ -5,6 +5,8 @@ export type ImageStyle = 'infographic' | 'poster' | 'diagram' | 'mindmap' | 'tim
 
 export type PreferredLanguage = 'ko' | 'en' | 'ja' | 'zh' | 'es' | 'fr' | 'de';
 
+export type ImageSize = '1K' | '2K' | '4K';
+
 // Plugin settings interface
 export interface NanoBananaSettings {
   // API Keys
@@ -20,6 +22,7 @@ export interface NanoBananaSettings {
   // Image Generation
   imageModel: string;
   imageStyle: ImageStyle;
+  imageSize: ImageSize;
   preferredLanguage: PreferredLanguage;
 
   // UX Settings
