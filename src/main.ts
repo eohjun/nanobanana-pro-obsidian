@@ -29,19 +29,19 @@ export default class NanoBananaPlugin extends Plugin {
     // Register commands
     this.addCommand({
       id: 'generate-knowledge-poster',
-      name: 'Generate Knowledge Poster',
+      name: 'Generate knowledge poster',
       callback: () => this.generatePoster()
     });
 
     this.addCommand({
       id: 'generate-prompt-only',
-      name: 'Generate Prompt Only (Copy to Clipboard)',
+      name: 'Generate prompt only (copy to clipboard)',
       callback: () => this.generatePromptOnly()
     });
 
     this.addCommand({
       id: 'regenerate-last-poster',
-      name: 'Regenerate Last Poster',
+      name: 'Regenerate last poster',
       callback: () => this.regenerateLastPoster()
     });
 
@@ -226,7 +226,7 @@ export default class NanoBananaPlugin extends Plugin {
       if (progressModal) {
         progressModal.showSuccess(imagePath);
       } else {
-        new Notice('✅ Knowledge Poster generated successfully!');
+        new Notice('✅ Knowledge poster generated successfully!');
       }
 
     } catch (error) {
@@ -446,7 +446,7 @@ export default class NanoBananaPlugin extends Plugin {
         lastError = error as GenerationError;
 
         if (!lastError.retryable || attempt === this.settings.autoRetryCount) {
-          throw lastError;
+          throw lastError instanceof Error ? lastError : new Error(lastError?.message || 'Unknown error');
         }
 
         // Exponential backoff
@@ -455,7 +455,7 @@ export default class NanoBananaPlugin extends Plugin {
       }
     }
 
-    throw lastError ?? new Error('Operation failed with no error details');
+    throw lastError instanceof Error ? lastError : new Error('Operation failed with no error details');
   }
 
   /**

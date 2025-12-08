@@ -40,7 +40,7 @@ export class QuickOptionsModal extends Modal {
 
     // Title
     contentEl.createEl('h2', {
-      text: '🎨 Quick Options',
+      text: '🎨 Quick options',
       cls: 'nanobanana-modal-title'
     });
 
@@ -52,15 +52,15 @@ export class QuickOptionsModal extends Modal {
     // Image Style dropdown
     new Setting(contentEl)
       .setName('Image style')
-      .setDesc('Select the visual style for your Knowledge Poster')
+      .setDesc('Select the visual style for your knowledge poster')
       .addDropdown(dropdown => dropdown
         .addOptions({
-          'infographic': '📊 Infographic - Charts & Visual Hierarchy',
-          'poster': '🎨 Poster - Bold Typography & Imagery',
-          'diagram': '📐 Diagram - Technical Connections',
-          'mindmap': '🧠 Mind Map - Central Concept & Branches',
-          'timeline': '📅 Timeline - Progression & Milestones',
-          'cartoon': '🎬 Cartoon - Comic Strip Panels'
+          'infographic': '📊 Infographic - Charts & visual hierarchy',
+          'poster': '🎨 Poster - Bold typography & imagery',
+          'diagram': '📐 Diagram - Technical connections',
+          'mindmap': '🧠 Mind map - Central concept & branches',
+          'timeline': '📅 Timeline - Progression & milestones',
+          'cartoon': '🎬 Cartoon - Comic strip panels'
         })
         .setValue(this.selectedStyle)
         .onChange((value: ImageStyle) => {
@@ -79,9 +79,9 @@ export class QuickOptionsModal extends Modal {
       .setDesc('Higher resolution = better quality (4K recommended for Korean text)')
       .addDropdown(dropdown => dropdown
         .addOptions({
-          '1K': '1K - Standard Quality',
-          '2K': '2K - High Quality',
-          '4K': '4K - Ultra HD Quality ⭐'
+          '1K': '1K - Standard quality',
+          '2K': '2K - High quality',
+          '4K': '4K - Ultra HD quality ⭐'
         })
         .setValue(this.selectedSize)
         .onChange((value: ImageSize) => {
@@ -110,7 +110,7 @@ export class QuickOptionsModal extends Modal {
 
     // Generate button
     const generateBtn = buttonContainer.createEl('button', {
-      text: '🚀 Generate Poster',
+      text: '🚀 Generate poster',
       cls: 'nanobanana-btn nanobanana-btn-primary'
     });
     generateBtn.onclick = () => {

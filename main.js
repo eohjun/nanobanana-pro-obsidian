@@ -160,7 +160,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         await this.plugin.saveSettings();
       })
     ).addExtraButton(
-      (button) => button.setIcon("external-link").setTooltip("Get API Key").onClick(() => {
+      (button) => button.setIcon("external-link").setTooltip("Get API key").onClick(() => {
         window.open("https://aistudio.google.com/apikey");
       })
     );
@@ -170,7 +170,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         await this.plugin.saveSettings();
       })
     ).addExtraButton(
-      (button) => button.setIcon("external-link").setTooltip("Get API Key").onClick(() => {
+      (button) => button.setIcon("external-link").setTooltip("Get API key").onClick(() => {
         window.open("https://platform.openai.com/api-keys");
       })
     );
@@ -180,7 +180,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         await this.plugin.saveSettings();
       })
     ).addExtraButton(
-      (button) => button.setIcon("external-link").setTooltip("Get API Key").onClick(() => {
+      (button) => button.setIcon("external-link").setTooltip("Get API key").onClick(() => {
         window.open("https://console.anthropic.com/settings/keys");
       })
     );
@@ -190,7 +190,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         await this.plugin.saveSettings();
       })
     ).addExtraButton(
-      (button) => button.setIcon("external-link").setTooltip("Get API Key").onClick(() => {
+      (button) => button.setIcon("external-link").setTooltip("Get API key").onClick(() => {
         window.open("https://console.x.ai/");
       })
     );
@@ -227,7 +227,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         "infographic": "\u{1F4CA} Infographic - Charts, icons, visual hierarchy",
         "poster": "\u{1F3A8} Poster - Bold typography, strong imagery",
         "diagram": "\u{1F4D0} Diagram - Technical, clear connections",
-        "mindmap": "\u{1F9E0} Mind Map - Central concept with branches",
+        "mindmap": "\u{1F9E0} Mind map - Central concept with branches",
         "timeline": "\u{1F4C5} Timeline - Progression and milestones",
         "cartoon": "\u{1F3AC} Cartoon - Comic strip with sequential panels"
       }).setValue(this.plugin.settings.imageStyle).onChange(async (value) => {
@@ -261,9 +261,9 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
     }
     new import_obsidian.Setting(containerEl).setName("Image resolution").setDesc("Higher resolution = better quality (especially for Korean text). 4K recommended for best results.").addDropdown(
       (dropdown) => dropdown.addOptions({
-        "1K": "1K - Standard Quality",
-        "2K": "2K - High Quality",
-        "4K": "4K - Ultra HD Quality (Recommended) \u2B50"
+        "1K": "1K - Standard quality",
+        "2K": "2K - High quality",
+        "4K": "4K - Ultra HD quality (recommended) \u2B50"
       }).setValue(this.plugin.settings.imageSize).onChange(async (value) => {
         this.plugin.settings.imageSize = value;
         await this.plugin.saveSettings();
@@ -321,7 +321,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
       text: "NanoBanana PRO v1.0.0"
     });
     aboutDiv.createEl("p", {
-      text: "Generate beautiful Knowledge Posters from your notes using AI."
+      text: "Generate beautiful knowledge posters from your notes using AI."
     });
     const linksDiv = aboutDiv.createDiv({ cls: "nanobanana-links" });
     linksDiv.createEl("a", {
@@ -330,7 +330,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
     });
     linksDiv.createEl("span", { text: " | " });
     linksDiv.createEl("a", {
-      text: "\u{1F41B} Report Issue",
+      text: "\u{1F41B} Report issue",
       href: "https://github.com/username/nanobanana-pro-obsidian/issues"
     });
   }
@@ -1450,21 +1450,21 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
     contentEl.empty();
     contentEl.addClass("nanobanana-quick-options");
     contentEl.createEl("h2", {
-      text: "\u{1F3A8} Quick Options",
+      text: "\u{1F3A8} Quick options",
       cls: "nanobanana-modal-title"
     });
     contentEl.createEl("p", {
       text: "Choose image style and resolution for this generation.",
       cls: "nanobanana-modal-desc"
     });
-    new import_obsidian7.Setting(contentEl).setName("Image style").setDesc("Select the visual style for your Knowledge Poster").addDropdown(
+    new import_obsidian7.Setting(contentEl).setName("Image style").setDesc("Select the visual style for your knowledge poster").addDropdown(
       (dropdown) => dropdown.addOptions({
-        "infographic": "\u{1F4CA} Infographic - Charts & Visual Hierarchy",
-        "poster": "\u{1F3A8} Poster - Bold Typography & Imagery",
-        "diagram": "\u{1F4D0} Diagram - Technical Connections",
-        "mindmap": "\u{1F9E0} Mind Map - Central Concept & Branches",
-        "timeline": "\u{1F4C5} Timeline - Progression & Milestones",
-        "cartoon": "\u{1F3AC} Cartoon - Comic Strip Panels"
+        "infographic": "\u{1F4CA} Infographic - Charts & visual hierarchy",
+        "poster": "\u{1F3A8} Poster - Bold typography & imagery",
+        "diagram": "\u{1F4D0} Diagram - Technical connections",
+        "mindmap": "\u{1F9E0} Mind map - Central concept & branches",
+        "timeline": "\u{1F4C5} Timeline - Progression & milestones",
+        "cartoon": "\u{1F3AC} Cartoon - Comic strip panels"
       }).setValue(this.selectedStyle).onChange((value) => {
         this.selectedStyle = value;
         this.updateCartoonSettings();
@@ -1474,9 +1474,9 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
     this.updateCartoonSettings();
     new import_obsidian7.Setting(contentEl).setName("Image resolution").setDesc("Higher resolution = better quality (4K recommended for Korean text)").addDropdown(
       (dropdown) => dropdown.addOptions({
-        "1K": "1K - Standard Quality",
-        "2K": "2K - High Quality",
-        "4K": "4K - Ultra HD Quality \u2B50"
+        "1K": "1K - Standard quality",
+        "2K": "2K - High quality",
+        "4K": "4K - Ultra HD quality \u2B50"
       }).setValue(this.selectedSize).onChange((value) => {
         this.selectedSize = value;
       })
@@ -1497,7 +1497,7 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
       this.close();
     };
     const generateBtn = buttonContainer.createEl("button", {
-      text: "\u{1F680} Generate Poster",
+      text: "\u{1F680} Generate poster",
       cls: "nanobanana-btn nanobanana-btn-primary"
     });
     generateBtn.onclick = () => {
@@ -1561,17 +1561,17 @@ var NanoBananaPlugin = class extends import_obsidian8.Plugin {
     this.fileService = new FileService(this.app);
     this.addCommand({
       id: "generate-knowledge-poster",
-      name: "Generate Knowledge Poster",
+      name: "Generate knowledge poster",
       callback: () => this.generatePoster()
     });
     this.addCommand({
       id: "generate-prompt-only",
-      name: "Generate Prompt Only (Copy to Clipboard)",
+      name: "Generate prompt only (copy to clipboard)",
       callback: () => this.generatePromptOnly()
     });
     this.addCommand({
       id: "regenerate-last-poster",
-      name: "Regenerate Last Poster",
+      name: "Regenerate last poster",
       callback: () => this.regenerateLastPoster()
     });
     this.addSettingTab(new NanoBananaSettingTab(this.app, this));
@@ -1710,7 +1710,7 @@ ${finalPrompt}`;
       if (progressModal) {
         progressModal.showSuccess(imagePath);
       } else {
-        new import_obsidian8.Notice("\u2705 Knowledge Poster generated successfully!");
+        new import_obsidian8.Notice("\u2705 Knowledge poster generated successfully!");
       }
     } catch (error) {
       const genError = error;
@@ -1893,13 +1893,13 @@ ${finalPrompt}`;
       } catch (error) {
         lastError = error;
         if (!lastError.retryable || attempt === this.settings.autoRetryCount) {
-          throw lastError;
+          throw lastError instanceof Error ? lastError : new Error((lastError == null ? void 0 : lastError.message) || "Unknown error");
         }
         const delay = Math.pow(2, attempt) * 1e3;
         await this.sleep(delay);
       }
     }
-    throw lastError != null ? lastError : new Error("Operation failed with no error details");
+    throw lastError instanceof Error ? lastError : new Error("Operation failed with no error details");
   }
   /**
    * Update progress modal

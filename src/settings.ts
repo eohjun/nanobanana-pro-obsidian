@@ -30,7 +30,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       )
       .addExtraButton(button => button
         .setIcon('external-link')
-        .setTooltip('Get API Key')
+        .setTooltip('Get API key')
         .onClick(() => {
           window.open('https://aistudio.google.com/apikey');
         })
@@ -49,7 +49,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       )
       .addExtraButton(button => button
         .setIcon('external-link')
-        .setTooltip('Get API Key')
+        .setTooltip('Get API key')
         .onClick(() => {
           window.open('https://platform.openai.com/api-keys');
         })
@@ -68,7 +68,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       )
       .addExtraButton(button => button
         .setIcon('external-link')
-        .setTooltip('Get API Key')
+        .setTooltip('Get API key')
         .onClick(() => {
           window.open('https://console.anthropic.com/settings/keys');
         })
@@ -87,7 +87,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       )
       .addExtraButton(button => button
         .setIcon('external-link')
-        .setTooltip('Get API Key')
+        .setTooltip('Get API key')
         .onClick(() => {
           window.open('https://console.x.ai/');
         })
@@ -152,7 +152,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
           'infographic': '📊 Infographic - Charts, icons, visual hierarchy',
           'poster': '🎨 Poster - Bold typography, strong imagery',
           'diagram': '📐 Diagram - Technical, clear connections',
-          'mindmap': '🧠 Mind Map - Central concept with branches',
+          'mindmap': '🧠 Mind map - Central concept with branches',
           'timeline': '📅 Timeline - Progression and milestones',
           'cartoon': '🎬 Cartoon - Comic strip with sequential panels'
         })
@@ -206,9 +206,9 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       .setDesc('Higher resolution = better quality (especially for Korean text). 4K recommended for best results.')
       .addDropdown(dropdown => dropdown
         .addOptions({
-          '1K': '1K - Standard Quality',
-          '2K': '2K - High Quality',
-          '4K': '4K - Ultra HD Quality (Recommended) ⭐'
+          '1K': '1K - Standard quality',
+          '2K': '2K - High quality',
+          '4K': '4K - Ultra HD quality (recommended) ⭐'
         })
         .setValue(this.plugin.settings.imageSize)
         .onChange(async (value: ImageSize) => {
@@ -310,7 +310,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       text: 'NanoBanana PRO v1.0.0'
     });
     aboutDiv.createEl('p', {
-      text: 'Generate beautiful Knowledge Posters from your notes using AI.'
+      text: 'Generate beautiful knowledge posters from your notes using AI.'
     });
 
     const linksDiv = aboutDiv.createDiv({ cls: 'nanobanana-links' });
@@ -320,7 +320,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
     });
     linksDiv.createEl('span', { text: ' | ' });
     linksDiv.createEl('a', {
-      text: '🐛 Report Issue',
+      text: '🐛 Report issue',
       href: 'https://github.com/username/nanobanana-pro-obsidian/issues'
     });
   }
