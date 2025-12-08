@@ -4,14 +4,14 @@
 
 ![Obsidian Plugin](https://img.shields.io/badge/Obsidian-Plugin-7C3AED?logo=obsidian&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-1.0.0-blue)
+![Version](https://img.shields.io/badge/Version-1.0.13-blue)
 
 ## ✨ Features
 
 - 🎨 **AI-Powered Infographic Generation**: Transform your notes into beautiful visual posters
 - 🤖 **Multiple AI Providers**: Choose from OpenAI, Google Gemini, Anthropic Claude, or xAI Grok
 - 📝 **Prompt Preview & Edit**: Review and customize the generated prompt before creating images
-- 📊 **5 Visual Styles**: Infographic, Poster, Diagram, Mind Map, Timeline
+- 📊 **6 Visual Styles**: Infographic, Poster, Diagram, Mind Map, Timeline, Cartoon (Comic Strip)
 - 🔄 **Auto-Retry**: Automatic retry on transient failures with exponential backoff
 - 📈 **Progress Tracking**: Real-time progress modal with step-by-step feedback
 - 🌙 **Dark Mode Support**: Fully compatible with Obsidian's dark theme
@@ -51,12 +51,12 @@
 1. Install [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin
 2. Open BRAT settings
 3. Click "Add Beta Plugin"
-4. Enter: `username/nanobanana-pro-obsidian`
+4. Enter: `reallygood83/nanobanana-pro-obsidian`
 5. Enable the plugin
 
 ### Manual Installation
 
-1. Download the latest release from [Releases](https://github.com/username/nanobanana-pro-obsidian/releases)
+1. Download the latest release from [Releases](https://github.com/reallygood83/nanobanana-pro-obsidian/releases)
 2. Extract to your vault's `.obsidian/plugins/nanobanana-pro-obsidian/` folder
 3. Reload Obsidian
 4. Enable the plugin in Settings → Community Plugins
@@ -126,6 +126,7 @@ You can assign custom hotkeys in Settings → Hotkeys:
 | 📐 Diagram | Technical, clear connections | System architecture |
 | 🧠 Mind Map | Central concept with branches | Brainstorming, concepts |
 | 📅 Timeline | Progression and milestones | Historical, processes |
+| 🎬 Cartoon | Comic strip with sequential panels | Stories, tutorials, step-by-step |
 
 ## ❓ Troubleshooting
 
@@ -150,7 +151,7 @@ You can assign custom hotkeys in Settings → Hotkeys:
 
 ```bash
 # Clone the repository
-git clone https://github.com/username/nanobanana-pro-obsidian.git
+git clone https://github.com/reallygood83/nanobanana-pro-obsidian.git
 cd nanobanana-pro-obsidian
 
 # Install dependencies
