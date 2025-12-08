@@ -1,5 +1,5 @@
 import { requestUrl } from 'obsidian';
-import { ImageGenerationResult, GenerationError, ImageStyle, PreferredLanguage, IMAGE_STYLES, LANGUAGE_NAMES } from '../types';
+import { ImageGenerationResult, GenerationError, GenerationErrorClass, ImageStyle, PreferredLanguage, IMAGE_STYLES, GeminiApiResponse } from '../types';
 import { IMAGE_GENERATION_PROMPT_TEMPLATE } from '../settingsData';
 
 export class ImageService {
@@ -94,7 +94,7 @@ export class ImageService {
         model
       };
     } catch (error) {
-      if ((error as GenerationError).type) {
+      if (error instanceof GenerationErrorClass) {
         throw error;
       }
       throw this.handleApiError(error);
@@ -104,7 +104,7 @@ export class ImageService {
   /**
    * Extract base64 image data from Gemini API response
    */
-  private extractImageFromResponse(data: any): { data: string; mimeType: string } | null {
+  private extractImageFromResponse(data: GeminiApiResponse): { data: string; mimeType: string } | null {
     try {
       const candidates = data.candidates;
       if (!candidates || candidates.length === 0) {
@@ -141,7 +141,7 @@ export class ImageService {
     }
   }
 
-  private handleHttpError(status: number, responseText: string): GenerationError {
+  private handleHttpError(status: number, responseText: string): GenerationErrorClass {
     if (status === 401 || status === 403) {
       return this.createError('INVALID_API_KEY', 'Invalid Google API key');
     }
@@ -161,7 +161,7 @@ export class ImageService {
     return this.createError('GENERATION_FAILED', `API error (${status}): ${responseText}`);
   }
 
-  private handleApiError(error: unknown): GenerationError {
+  private handleApiError(error: unknown): GenerationErrorClass {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
     if (errorMessage.includes('net::') || errorMessage.includes('network')) {
@@ -171,8 +171,8 @@ export class ImageService {
     return this.createError('GENERATION_FAILED', `Image generation error: ${errorMessage}`);
   }
 
-  private createError(type: GenerationError['type'], message: string, retryable = false): GenerationError {
-    return { type, message, retryable };
+  private createError(type: GenerationError['type'], message: string, retryable = false): GenerationErrorClass {
+    return new GenerationErrorClass(type, message, retryable);
   }
 
   /**

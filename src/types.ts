@@ -75,6 +75,57 @@ export interface GenerationError {
   retryable: boolean;
 }
 
+// Custom Error class for generation errors
+export class GenerationErrorClass extends Error {
+  type: ErrorType;
+  details?: string;
+  retryable: boolean;
+
+  constructor(type: ErrorType, message: string, retryable = false, details?: string) {
+    super(message);
+    this.name = 'GenerationError';
+    this.type = type;
+    this.details = details;
+    this.retryable = retryable;
+  }
+}
+
+// Gemini API response types
+export interface GeminiInlineData {
+  data: string;
+  mime_type?: string;
+  mimeType?: string;
+}
+
+export interface GeminiPart {
+  text?: string;
+  inline_data?: GeminiInlineData;
+  inlineData?: GeminiInlineData;
+}
+
+export interface GeminiContent {
+  parts?: GeminiPart[];
+  role?: string;
+}
+
+export interface GeminiSafetyRating {
+  category: string;
+  probability: string;
+}
+
+export interface GeminiCandidate {
+  content?: GeminiContent;
+  safetyRatings?: GeminiSafetyRating[];
+  finishReason?: string;
+}
+
+export interface GeminiApiResponse {
+  candidates?: GeminiCandidate[];
+  promptFeedback?: {
+    safetyRatings?: GeminiSafetyRating[];
+  };
+}
+
 // API Response types
 export interface PromptGenerationResult {
   prompt: string;

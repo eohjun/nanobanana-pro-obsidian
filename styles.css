@@ -246,6 +246,66 @@
   margin: 4px 0;
 }
 
+/* ==================== Quick Options Modal ==================== */
+.nanobanana-quick-options {
+  padding: 20px;
+}
+
+.nanobanana-modal-title {
+  margin: 0 0 8px 0;
+  font-size: 1.4em;
+}
+
+.nanobanana-modal-desc {
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.nanobanana-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.nanobanana-btn-cancel {
+  background: var(--background-modifier-border);
+  color: var(--text-normal);
+}
+
+.nanobanana-btn-cancel:hover {
+  background: var(--background-modifier-hover);
+}
+
+.nanobanana-btn-primary {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.nanobanana-btn-primary:hover {
+  background: var(--interactive-accent-hover);
+}
+
+.nanobanana-cartoon-settings {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.nanobanana-cartoon-settings .setting-item {
+  padding: 8px 0;
+  border-bottom: none;
+}
+
+/* ==================== Utility Classes ==================== */
+.nanobanana-hidden {
+  display: none !important;
+}
+
 /* ==================== Settings Tab ==================== */
 .nanobanana-about {
   background: var(--background-secondary);

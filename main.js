@@ -100,6 +100,15 @@ Design requirements:
 var import_obsidian = require("obsidian");
 
 // src/types.ts
+var GenerationErrorClass = class extends Error {
+  constructor(type, message, retryable = false, details) {
+    super(message);
+    this.name = "GenerationError";
+    this.type = type;
+    this.details = details;
+    this.retryable = retryable;
+  }
+};
 var PROVIDER_CONFIGS = {
   openai: {
     name: "OpenAI",
@@ -144,9 +153,9 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h1", { text: "\u{1F34C} NanoBanana PRO Settings" });
-    containerEl.createEl("h2", { text: "\u{1F511} API Keys" });
-    new import_obsidian.Setting(containerEl).setName("Google API Key").setDesc("Required for image generation. Get your key from Google AI Studio.").addText(
+    new import_obsidian.Setting(containerEl).setName("NanoBanana PRO settings").setHeading();
+    new import_obsidian.Setting(containerEl).setName("API keys").setHeading();
+    new import_obsidian.Setting(containerEl).setName("Google API key").setDesc("Required for image generation. Get your key from Google AI Studio.").addText(
       (text) => text.setPlaceholder("Enter your Google API key").setValue(this.plugin.settings.googleApiKey).onChange(async (value) => {
         this.plugin.settings.googleApiKey = value;
         await this.plugin.saveSettings();
@@ -156,7 +165,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         window.open("https://aistudio.google.com/apikey");
       })
     );
-    new import_obsidian.Setting(containerEl).setName("OpenAI API Key").setDesc("Optional. Used for prompt generation if OpenAI is selected.").addText(
+    new import_obsidian.Setting(containerEl).setName("OpenAI API key").setDesc("Optional. Used for prompt generation if OpenAI is selected.").addText(
       (text) => text.setPlaceholder("Enter your OpenAI API key").setValue(this.plugin.settings.openaiApiKey).onChange(async (value) => {
         this.plugin.settings.openaiApiKey = value;
         await this.plugin.saveSettings();
@@ -166,7 +175,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         window.open("https://platform.openai.com/api-keys");
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Anthropic API Key").setDesc("Optional. Used for prompt generation if Anthropic is selected.").addText(
+    new import_obsidian.Setting(containerEl).setName("Anthropic API key").setDesc("Optional. Used for prompt generation if Anthropic is selected.").addText(
       (text) => text.setPlaceholder("Enter your Anthropic API key").setValue(this.plugin.settings.anthropicApiKey).onChange(async (value) => {
         this.plugin.settings.anthropicApiKey = value;
         await this.plugin.saveSettings();
@@ -176,7 +185,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         window.open("https://console.anthropic.com/settings/keys");
       })
     );
-    new import_obsidian.Setting(containerEl).setName("xAI API Key").setDesc("Optional. Used for prompt generation if xAI is selected.").addText(
+    new import_obsidian.Setting(containerEl).setName("xAI API key").setDesc("Optional. Used for prompt generation if xAI is selected.").addText(
       (text) => text.setPlaceholder("Enter your xAI API key").setValue(this.plugin.settings.xaiApiKey).onChange(async (value) => {
         this.plugin.settings.xaiApiKey = value;
         await this.plugin.saveSettings();
@@ -186,8 +195,8 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         window.open("https://console.x.ai/");
       })
     );
-    containerEl.createEl("h2", { text: "\u{1F916} Prompt Generation" });
-    new import_obsidian.Setting(containerEl).setName("AI Provider").setDesc("Select which AI provider to use for generating image prompts.").addDropdown(
+    new import_obsidian.Setting(containerEl).setName("Prompt generation").setHeading();
+    new import_obsidian.Setting(containerEl).setName("AI provider").setDesc("Select which AI provider to use for generating image prompts.").addDropdown(
       (dropdown) => dropdown.addOptions({
         "google": "Google Gemini",
         "openai": "OpenAI",
@@ -201,20 +210,20 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
       })
     );
     const providerConfig = PROVIDER_CONFIGS[this.plugin.settings.selectedProvider];
-    new import_obsidian.Setting(containerEl).setName("Prompt Model").setDesc(`Model to use for prompt generation. Suggestions: ${providerConfig.models.join(", ")}`).addText(
+    new import_obsidian.Setting(containerEl).setName("Prompt model").setDesc(`Model to use for prompt generation. Suggestions: ${providerConfig.models.join(", ")}`).addText(
       (text) => text.setPlaceholder(providerConfig.defaultModel).setValue(this.plugin.settings.promptModel).onChange(async (value) => {
         this.plugin.settings.promptModel = value;
         await this.plugin.saveSettings();
       })
     );
-    containerEl.createEl("h2", { text: "\u{1F5BC}\uFE0F Image Generation" });
-    new import_obsidian.Setting(containerEl).setName("Image Model").setDesc("Google Gemini model for image generation. Must support image output.").addText(
+    new import_obsidian.Setting(containerEl).setName("Image generation").setHeading();
+    new import_obsidian.Setting(containerEl).setName("Image model").setDesc("Google Gemini model for image generation. Must support image output.").addText(
       (text) => text.setPlaceholder("gemini-3-pro-image-preview").setValue(this.plugin.settings.imageModel).onChange(async (value) => {
         this.plugin.settings.imageModel = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Image Style").setDesc("Default style for generated posters.").addDropdown(
+    new import_obsidian.Setting(containerEl).setName("Image style").setDesc("Default style for generated posters.").addDropdown(
       (dropdown) => dropdown.addOptions({
         "infographic": "\u{1F4CA} Infographic - Charts, icons, visual hierarchy",
         "poster": "\u{1F3A8} Poster - Bold typography, strong imagery",
@@ -229,7 +238,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
       })
     );
     if (this.plugin.settings.imageStyle === "cartoon") {
-      new import_obsidian.Setting(containerEl).setName("Cartoon Panel Cuts").setDesc("Number of panels in the comic strip.").addDropdown(
+      new import_obsidian.Setting(containerEl).setName("Cartoon panel cuts").setDesc("Number of panels in the comic strip.").addDropdown(
         (dropdown) => dropdown.addOptions({
           "4": "4 cuts (2\xD72 grid)",
           "6": "6 cuts (2\xD73 grid)",
@@ -242,7 +251,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         })
       );
       if (this.plugin.settings.cartoonCuts === "custom") {
-        new import_obsidian.Setting(containerEl).setName("Custom Panel Count").setDesc("Enter a custom number of panels (2-12 recommended).").addText(
+        new import_obsidian.Setting(containerEl).setName("Custom panel count").setDesc("Enter a custom number of panels (2-12 recommended).").addText(
           (text) => text.setPlaceholder("4").setValue(String(this.plugin.settings.customCartoonCuts)).onChange(async (value) => {
             const numValue = parseInt(value) || 4;
             this.plugin.settings.customCartoonCuts = Math.max(2, Math.min(12, numValue));
@@ -251,7 +260,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         );
       }
     }
-    new import_obsidian.Setting(containerEl).setName("Image Resolution").setDesc("Higher resolution = better quality (especially for Korean text). 4K recommended for best results.").addDropdown(
+    new import_obsidian.Setting(containerEl).setName("Image resolution").setDesc("Higher resolution = better quality (especially for Korean text). 4K recommended for best results.").addDropdown(
       (dropdown) => dropdown.addOptions({
         "1K": "1K - Standard Quality",
         "2K": "2K - High Quality",
@@ -261,7 +270,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Preferred Language").setDesc("Language for text in generated images (e.g., titles, labels, descriptions).").addDropdown(
+    new import_obsidian.Setting(containerEl).setName("Preferred language").setDesc("Language for text in generated images (e.g., titles, labels, descriptions).").addDropdown(
       (dropdown) => dropdown.addOptions({
         "ko": "\u{1F1F0}\u{1F1F7} \uD55C\uAD6D\uC5B4 (Korean)",
         "en": "\u{1F1FA}\u{1F1F8} English",
@@ -275,39 +284,39 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         await this.plugin.saveSettings();
       })
     );
-    containerEl.createEl("h2", { text: "\u2699\uFE0F User Experience" });
-    new import_obsidian.Setting(containerEl).setName("Show Preview Before Generation").setDesc("Show the generated prompt and allow editing before creating the image.").addToggle(
+    new import_obsidian.Setting(containerEl).setName("User experience").setHeading();
+    new import_obsidian.Setting(containerEl).setName("Show preview before generation").setDesc("Show the generated prompt and allow editing before creating the image.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.showPreviewBeforeGeneration).onChange(async (value) => {
         this.plugin.settings.showPreviewBeforeGeneration = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Show Progress Modal").setDesc("Display a progress indicator during generation.").addToggle(
+    new import_obsidian.Setting(containerEl).setName("Show progress modal").setDesc("Display a progress indicator during generation.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.showProgressModal).onChange(async (value) => {
         this.plugin.settings.showProgressModal = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Attachment Folder").setDesc("Folder to save generated images. Will be created if it doesn't exist.").addText(
+    new import_obsidian.Setting(containerEl).setName("Attachment folder").setDesc("Folder to save generated images. Will be created if it doesn't exist.").addText(
       (text) => text.setPlaceholder("999-Attachments").setValue(this.plugin.settings.attachmentFolder).onChange(async (value) => {
         this.plugin.settings.attachmentFolder = value || "999-Attachments";
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Auto-Retry Count").setDesc("Number of automatic retries on transient failures (0-5).").addSlider(
+    new import_obsidian.Setting(containerEl).setName("Auto-retry count").setDesc("Number of automatic retries on transient failures (0-5).").addSlider(
       (slider) => slider.setLimits(0, 5, 1).setValue(this.plugin.settings.autoRetryCount).setDynamicTooltip().onChange(async (value) => {
         this.plugin.settings.autoRetryCount = value;
         await this.plugin.saveSettings();
       })
     );
-    containerEl.createEl("h2", { text: "\u{1F527} Advanced" });
-    new import_obsidian.Setting(containerEl).setName("Custom Prompt Prefix").setDesc("Optional text to prepend to all generated prompts.").addTextArea(
+    new import_obsidian.Setting(containerEl).setName("Advanced").setHeading();
+    new import_obsidian.Setting(containerEl).setName("Custom prompt prefix").setDesc("Optional text to prepend to all generated prompts.").addTextArea(
       (textarea) => textarea.setPlaceholder('e.g., "Create in a minimalist style with blue color scheme..."').setValue(this.plugin.settings.customPromptPrefix).onChange(async (value) => {
         this.plugin.settings.customPromptPrefix = value;
         await this.plugin.saveSettings();
       })
     );
-    containerEl.createEl("h2", { text: "\u2139\uFE0F About" });
+    new import_obsidian.Setting(containerEl).setName("About").setHeading();
     const aboutDiv = containerEl.createDiv({ cls: "nanobanana-about" });
     aboutDiv.createEl("p", {
       text: "NanoBanana PRO v1.0.0"
@@ -349,7 +358,7 @@ var PromptService = class {
         provider
       };
     } catch (error) {
-      if (error.type) {
+      if (error instanceof GenerationErrorClass) {
         throw error;
       }
       throw this.handleApiError(error, provider);
@@ -474,9 +483,9 @@ ${content}` }
   }
   async callXAI(model, apiKey, content) {
     var _a, _b, _c;
-    console.log("[xAI Debug] Model:", model);
-    console.log("[xAI Debug] Content length:", content.length);
-    console.log("[xAI Debug] System prompt length:", SYSTEM_PROMPT.length);
+    console.debug("[xAI Debug] Model:", model);
+    console.debug("[xAI Debug] Content length:", content.length);
+    console.debug("[xAI Debug] System prompt length:", SYSTEM_PROMPT.length);
     try {
       const response = await (0, import_obsidian2.requestUrl)({
         url: "https://api.x.ai/v1/chat/completions",
@@ -496,13 +505,13 @@ ${content}` }
           temperature: 0.7
         })
       });
-      console.log("[xAI Debug] Response status:", response.status);
+      console.debug("[xAI Debug] Response status:", response.status);
       if (response.status !== 200) {
         console.error("[xAI Debug] Error response:", response.text);
         throw this.handleHttpError(response.status, response.text, "xai");
       }
       const data = response.json;
-      console.log("[xAI Debug] Success! Response received");
+      console.debug("[xAI Debug] Success! Response received");
       return ((_c = (_b = (_a = data.choices[0]) == null ? void 0 : _a.message) == null ? void 0 : _b.content) == null ? void 0 : _c.trim()) || "";
     } catch (error) {
       console.error("[xAI Debug] FULL ERROR:", error);
@@ -539,7 +548,7 @@ ${content}` }
     return this.createError("GENERATION_FAILED", `${PROVIDER_CONFIGS[provider].name} error: ${errorMessage}`);
   }
   createError(type, message, retryable = false) {
-    return { type, message, retryable };
+    return new GenerationErrorClass(type, message, retryable);
   }
 };
 
@@ -612,7 +621,7 @@ var ImageService = class {
         model
       };
     } catch (error) {
-      if (error.type) {
+      if (error instanceof GenerationErrorClass) {
         throw error;
       }
       throw this.handleApiError(error);
@@ -678,7 +687,7 @@ var ImageService = class {
     return this.createError("GENERATION_FAILED", `Image generation error: ${errorMessage}`);
   }
   createError(type, message, retryable = false) {
-    return { type, message, retryable };
+    return new GenerationErrorClass(type, message, retryable);
   }
   /**
    * Generate cartoon style description based on number of cuts
@@ -802,7 +811,7 @@ var FileService = class {
     return mimeMap[mimeType] || "png";
   }
   createError(type, message) {
-    return { type, message, retryable: false };
+    return new GenerationErrorClass(type, message, false);
   }
 };
 
@@ -1447,7 +1456,7 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
       text: "Choose image style and resolution for this generation.",
       cls: "nanobanana-modal-desc"
     });
-    new import_obsidian7.Setting(contentEl).setName("Image Style").setDesc("Select the visual style for your Knowledge Poster").addDropdown(
+    new import_obsidian7.Setting(contentEl).setName("Image style").setDesc("Select the visual style for your Knowledge Poster").addDropdown(
       (dropdown) => dropdown.addOptions({
         "infographic": "\u{1F4CA} Infographic - Charts & Visual Hierarchy",
         "poster": "\u{1F3A8} Poster - Bold Typography & Imagery",
@@ -1462,7 +1471,7 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
     );
     this.cartoonSettingsContainer = contentEl.createDiv({ cls: "nanobanana-cartoon-settings" });
     this.updateCartoonSettings();
-    new import_obsidian7.Setting(contentEl).setName("Image Resolution").setDesc("Higher resolution = better quality (4K recommended for Korean text)").addDropdown(
+    new import_obsidian7.Setting(contentEl).setName("Image resolution").setDesc("Higher resolution = better quality (4K recommended for Korean text)").addDropdown(
       (dropdown) => dropdown.addOptions({
         "1K": "1K - Standard Quality",
         "2K": "2K - High Quality",
@@ -1500,18 +1509,17 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
       });
       this.close();
     };
-    this.addStyles();
   }
   updateCartoonSettings() {
     if (!this.cartoonSettingsContainer)
       return;
     this.cartoonSettingsContainer.empty();
     if (this.selectedStyle !== "cartoon") {
-      this.cartoonSettingsContainer.style.display = "none";
+      this.cartoonSettingsContainer.addClass("nanobanana-hidden");
       return;
     }
-    this.cartoonSettingsContainer.style.display = "block";
-    new import_obsidian7.Setting(this.cartoonSettingsContainer).setName("Panel Cuts").setDesc("Number of panels in the comic strip").addDropdown(
+    this.cartoonSettingsContainer.removeClass("nanobanana-hidden");
+    new import_obsidian7.Setting(this.cartoonSettingsContainer).setName("Panel cuts").setDesc("Number of panels in the comic strip").addDropdown(
       (dropdown) => dropdown.addOptions({
         "4": "4 cuts (2\xD72 grid)",
         "6": "6 cuts (2\xD73 grid)",
@@ -1523,71 +1531,13 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
       })
     );
     if (this.selectedCartoonCuts === "custom") {
-      new import_obsidian7.Setting(this.cartoonSettingsContainer).setName("Custom Panel Count").setDesc("Enter number of panels (2-12 recommended)").addText(
+      new import_obsidian7.Setting(this.cartoonSettingsContainer).setName("Custom panel count").setDesc("Enter number of panels (2-12 recommended)").addText(
         (text) => text.setPlaceholder("4").setValue(String(this.selectedCustomCuts)).onChange((value) => {
           const numValue = parseInt(value) || 4;
           this.selectedCustomCuts = Math.max(2, Math.min(12, numValue));
         })
       );
     }
-  }
-  addStyles() {
-    const style = document.createElement("style");
-    style.textContent = `
-      .nanobanana-quick-options {
-        padding: 20px;
-      }
-      .nanobanana-modal-title {
-        margin: 0 0 8px 0;
-        font-size: 1.4em;
-      }
-      .nanobanana-modal-desc {
-        color: var(--text-muted);
-        margin-bottom: 20px;
-      }
-      .nanobanana-button-container {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 20px;
-        padding-top: 15px;
-        border-top: 1px solid var(--background-modifier-border);
-      }
-      .nanobanana-btn {
-        padding: 8px 16px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 500;
-        border: none;
-        transition: all 0.2s ease;
-      }
-      .nanobanana-btn-cancel {
-        background: var(--background-modifier-border);
-        color: var(--text-normal);
-      }
-      .nanobanana-btn-cancel:hover {
-        background: var(--background-modifier-hover);
-      }
-      .nanobanana-btn-primary {
-        background: var(--interactive-accent);
-        color: var(--text-on-accent);
-      }
-      .nanobanana-btn-primary:hover {
-        background: var(--interactive-accent-hover);
-      }
-      .nanobanana-cartoon-settings {
-        padding: 10px;
-        margin: 10px 0;
-        border-radius: 8px;
-        background: var(--background-secondary);
-        border: 1px solid var(--background-modifier-border);
-      }
-      .nanobanana-cartoon-settings .setting-item {
-        padding: 8px 0;
-        border-bottom: none;
-      }
-    `;
-    this.contentEl.appendChild(style);
   }
   onClose() {
     const { contentEl } = this;
@@ -1624,10 +1574,10 @@ var NanoBananaPlugin = class extends import_obsidian8.Plugin {
       callback: () => this.regenerateLastPoster()
     });
     this.addSettingTab(new NanoBananaSettingTab(this.app, this));
-    console.log("NanoBanana PRO loaded");
+    console.debug("NanoBanana PRO loaded");
   }
   onunload() {
-    console.log("NanoBanana PRO unloaded");
+    console.debug("NanoBanana PRO unloaded");
   }
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());

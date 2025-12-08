@@ -48,11 +48,11 @@ export default class NanoBananaPlugin extends Plugin {
     // Register settings tab
     this.addSettingTab(new NanoBananaSettingTab(this.app, this));
 
-    console.log('NanoBanana PRO loaded');
+    console.debug('NanoBanana PRO loaded');
   }
 
   onunload() {
-    console.log('NanoBanana PRO unloaded');
+    console.debug('NanoBanana PRO unloaded');
   }
 
   async loadSettings() {

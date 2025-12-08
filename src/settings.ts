@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import NanoBananaPlugin from './main';
-import { AIProvider, ImageStyle, ImageSize, PreferredLanguage, CartoonCuts, PROVIDER_CONFIGS, IMAGE_STYLES, LANGUAGE_NAMES } from './types';
+import { AIProvider, ImageStyle, ImageSize, PreferredLanguage, CartoonCuts, PROVIDER_CONFIGS } from './types';
 
 export class NanoBananaSettingTab extends PluginSettingTab {
   plugin: NanoBananaPlugin;
@@ -14,13 +14,13 @@ export class NanoBananaSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl('h1', { text: '🍌 NanoBanana PRO Settings' });
+    new Setting(containerEl).setName('NanoBanana PRO settings').setHeading();
 
     // ==================== API Keys Section ====================
-    containerEl.createEl('h2', { text: '🔑 API Keys' });
+    new Setting(containerEl).setName('API keys').setHeading();
 
     new Setting(containerEl)
-      .setName('Google API Key')
+      .setName('Google API key')
       .setDesc('Required for image generation. Get your key from Google AI Studio.')
       .addText(text => text
         .setPlaceholder('Enter your Google API key')
@@ -39,7 +39,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('OpenAI API Key')
+      .setName('OpenAI API key')
       .setDesc('Optional. Used for prompt generation if OpenAI is selected.')
       .addText(text => text
         .setPlaceholder('Enter your OpenAI API key')
@@ -58,7 +58,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Anthropic API Key')
+      .setName('Anthropic API key')
       .setDesc('Optional. Used for prompt generation if Anthropic is selected.')
       .addText(text => text
         .setPlaceholder('Enter your Anthropic API key')
@@ -77,7 +77,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('xAI API Key')
+      .setName('xAI API key')
       .setDesc('Optional. Used for prompt generation if xAI is selected.')
       .addText(text => text
         .setPlaceholder('Enter your xAI API key')
@@ -96,10 +96,10 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       );
 
     // ==================== Prompt Generation Section ====================
-    containerEl.createEl('h2', { text: '🤖 Prompt Generation' });
+    new Setting(containerEl).setName('Prompt generation').setHeading();
 
     new Setting(containerEl)
-      .setName('AI Provider')
+      .setName('AI provider')
       .setDesc('Select which AI provider to use for generating image prompts.')
       .addDropdown(dropdown => dropdown
         .addOptions({
@@ -120,7 +120,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
 
     const providerConfig = PROVIDER_CONFIGS[this.plugin.settings.selectedProvider];
     new Setting(containerEl)
-      .setName('Prompt Model')
+      .setName('Prompt model')
       .setDesc(`Model to use for prompt generation. Suggestions: ${providerConfig.models.join(', ')}`)
       .addText(text => text
         .setPlaceholder(providerConfig.defaultModel)
@@ -132,10 +132,10 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       );
 
     // ==================== Image Generation Section ====================
-    containerEl.createEl('h2', { text: '🖼️ Image Generation' });
+    new Setting(containerEl).setName('Image generation').setHeading();
 
     new Setting(containerEl)
-      .setName('Image Model')
+      .setName('Image model')
       .setDesc('Google Gemini model for image generation. Must support image output.')
       .addText(text => text
         .setPlaceholder('gemini-3-pro-image-preview')
@@ -147,7 +147,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Image Style')
+      .setName('Image style')
       .setDesc('Default style for generated posters.')
       .addDropdown(dropdown => dropdown
         .addOptions({
@@ -169,7 +169,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
     // Cartoon Cuts Settings (only shown when cartoon style is selected)
     if (this.plugin.settings.imageStyle === 'cartoon') {
       new Setting(containerEl)
-        .setName('Cartoon Panel Cuts')
+        .setName('Cartoon panel cuts')
         .setDesc('Number of panels in the comic strip.')
         .addDropdown(dropdown => dropdown
           .addOptions({
@@ -189,7 +189,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       // Custom cuts input (only shown when 'custom' is selected)
       if (this.plugin.settings.cartoonCuts === 'custom') {
         new Setting(containerEl)
-          .setName('Custom Panel Count')
+          .setName('Custom panel count')
           .setDesc('Enter a custom number of panels (2-12 recommended).')
           .addText(text => text
             .setPlaceholder('4')
@@ -204,7 +204,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
     }
 
     new Setting(containerEl)
-      .setName('Image Resolution')
+      .setName('Image resolution')
       .setDesc('Higher resolution = better quality (especially for Korean text). 4K recommended for best results.')
       .addDropdown(dropdown => dropdown
         .addOptions({
@@ -220,7 +220,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Preferred Language')
+      .setName('Preferred language')
       .setDesc('Language for text in generated images (e.g., titles, labels, descriptions).')
       .addDropdown(dropdown => dropdown
         .addOptions({
@@ -240,10 +240,10 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       );
 
     // ==================== UX Settings Section ====================
-    containerEl.createEl('h2', { text: '⚙️ User Experience' });
+    new Setting(containerEl).setName('User experience').setHeading();
 
     new Setting(containerEl)
-      .setName('Show Preview Before Generation')
+      .setName('Show preview before generation')
       .setDesc('Show the generated prompt and allow editing before creating the image.')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.showPreviewBeforeGeneration)
@@ -254,7 +254,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Show Progress Modal')
+      .setName('Show progress modal')
       .setDesc('Display a progress indicator during generation.')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.showProgressModal)
@@ -265,7 +265,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Attachment Folder')
+      .setName('Attachment folder')
       .setDesc('Folder to save generated images. Will be created if it doesn\'t exist.')
       .addText(text => text
         .setPlaceholder('999-Attachments')
@@ -277,7 +277,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Auto-Retry Count')
+      .setName('Auto-retry count')
       .setDesc('Number of automatic retries on transient failures (0-5).')
       .addSlider(slider => slider
         .setLimits(0, 5, 1)
@@ -290,10 +290,10 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       );
 
     // ==================== Advanced Section ====================
-    containerEl.createEl('h2', { text: '🔧 Advanced' });
+    new Setting(containerEl).setName('Advanced').setHeading();
 
     new Setting(containerEl)
-      .setName('Custom Prompt Prefix')
+      .setName('Custom prompt prefix')
       .setDesc('Optional text to prepend to all generated prompts.')
       .addTextArea(textarea => textarea
         .setPlaceholder('e.g., "Create in a minimalist style with blue color scheme..."')
@@ -305,7 +305,7 @@ export class NanoBananaSettingTab extends PluginSettingTab {
       );
 
     // ==================== About Section ====================
-    containerEl.createEl('h2', { text: 'ℹ️ About' });
+    new Setting(containerEl).setName('About').setHeading();
 
     const aboutDiv = containerEl.createDiv({ cls: 'nanobanana-about' });
     aboutDiv.createEl('p', {

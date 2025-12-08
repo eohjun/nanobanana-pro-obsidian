@@ -3,6 +3,7 @@ import {
   AIProvider,
   PromptGenerationResult,
   GenerationError,
+  GenerationErrorClass,
   PROVIDER_CONFIGS
 } from '../types';
 import { SYSTEM_PROMPT } from '../settingsData';
@@ -33,7 +34,7 @@ export class PromptService {
         provider
       };
     } catch (error) {
-      if ((error as GenerationError).type) {
+      if (error instanceof GenerationErrorClass) {
         throw error;
       }
       throw this.handleApiError(error, provider);
@@ -173,9 +174,9 @@ export class PromptService {
 
   private async callXAI(model: string, apiKey: string, content: string): Promise<string> {
     // Debug: Log what we're sending
-    console.log('[xAI Debug] Model:', model);
-    console.log('[xAI Debug] Content length:', content.length);
-    console.log('[xAI Debug] System prompt length:', SYSTEM_PROMPT.length);
+    console.debug('[xAI Debug] Model:', model);
+    console.debug('[xAI Debug] Content length:', content.length);
+    console.debug('[xAI Debug] System prompt length:', SYSTEM_PROMPT.length);
 
     try {
       const response = await requestUrl({
@@ -195,7 +196,7 @@ export class PromptService {
         })
       });
 
-      console.log('[xAI Debug] Response status:', response.status);
+      console.debug('[xAI Debug] Response status:', response.status);
 
       if (response.status !== 200) {
         console.error('[xAI Debug] Error response:', response.text);
@@ -203,7 +204,7 @@ export class PromptService {
       }
 
       const data = response.json;
-      console.log('[xAI Debug] Success! Response received');
+      console.debug('[xAI Debug] Success! Response received');
       return data.choices[0]?.message?.content?.trim() || '';
     } catch (error) {
       // Log the FULL error before any processing
@@ -215,7 +216,7 @@ export class PromptService {
     }
   }
 
-  private handleHttpError(status: number, responseText: string, provider: AIProvider): GenerationError {
+  private handleHttpError(status: number, responseText: string, provider: AIProvider): GenerationErrorClass {
     if (status === 401 || status === 403) {
       return this.createError('INVALID_API_KEY', `Invalid ${PROVIDER_CONFIGS[provider].name} API key`);
     }
@@ -229,7 +230,7 @@ export class PromptService {
     return this.createError('GENERATION_FAILED', `API error: ${responseText}`);
   }
 
-  private handleApiError(error: unknown, provider: AIProvider): GenerationError {
+  private handleApiError(error: unknown, provider: AIProvider): GenerationErrorClass {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
     // Detect 429 rate limit from Obsidian's requestUrl exception message
@@ -250,7 +251,7 @@ export class PromptService {
     return this.createError('GENERATION_FAILED', `${PROVIDER_CONFIGS[provider].name} error: ${errorMessage}`);
   }
 
-  private createError(type: GenerationError['type'], message: string, retryable = false): GenerationError {
-    return { type, message, retryable };
+  private createError(type: GenerationError['type'], message: string, retryable = false): GenerationErrorClass {
+    return new GenerationErrorClass(type, message, retryable);
   }
 }

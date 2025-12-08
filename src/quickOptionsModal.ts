@@ -1,5 +1,5 @@
 import { App, Modal, Setting } from 'obsidian';
-import { ImageStyle, ImageSize, CartoonCuts, IMAGE_STYLES } from './types';
+import { ImageStyle, ImageSize, CartoonCuts } from './types';
 
 export interface QuickOptionsResult {
   confirmed: boolean;
@@ -51,7 +51,7 @@ export class QuickOptionsModal extends Modal {
 
     // Image Style dropdown
     new Setting(contentEl)
-      .setName('Image Style')
+      .setName('Image style')
       .setDesc('Select the visual style for your Knowledge Poster')
       .addDropdown(dropdown => dropdown
         .addOptions({
@@ -75,7 +75,7 @@ export class QuickOptionsModal extends Modal {
 
     // Image Resolution dropdown
     new Setting(contentEl)
-      .setName('Image Resolution')
+      .setName('Image resolution')
       .setDesc('Higher resolution = better quality (4K recommended for Korean text)')
       .addDropdown(dropdown => dropdown
         .addOptions({
@@ -124,8 +124,6 @@ export class QuickOptionsModal extends Modal {
       this.close();
     };
 
-    // Add styles
-    this.addStyles();
   }
 
   private updateCartoonSettings() {
@@ -136,15 +134,15 @@ export class QuickOptionsModal extends Modal {
 
     // Only show cartoon settings when cartoon style is selected
     if (this.selectedStyle !== 'cartoon') {
-      this.cartoonSettingsContainer.style.display = 'none';
+      this.cartoonSettingsContainer.addClass('nanobanana-hidden');
       return;
     }
 
-    this.cartoonSettingsContainer.style.display = 'block';
+    this.cartoonSettingsContainer.removeClass('nanobanana-hidden');
 
     // Cartoon Cuts dropdown
     new Setting(this.cartoonSettingsContainer)
-      .setName('Panel Cuts')
+      .setName('Panel cuts')
       .setDesc('Number of panels in the comic strip')
       .addDropdown(dropdown => dropdown
         .addOptions({
@@ -163,7 +161,7 @@ export class QuickOptionsModal extends Modal {
     // Custom cuts input (only shown when 'custom' is selected)
     if (this.selectedCartoonCuts === 'custom') {
       new Setting(this.cartoonSettingsContainer)
-        .setName('Custom Panel Count')
+        .setName('Custom panel count')
         .setDesc('Enter number of panels (2-12 recommended)')
         .addText(text => text
           .setPlaceholder('4')
@@ -174,65 +172,6 @@ export class QuickOptionsModal extends Modal {
           })
         );
     }
-  }
-
-  private addStyles() {
-    const style = document.createElement('style');
-    style.textContent = `
-      .nanobanana-quick-options {
-        padding: 20px;
-      }
-      .nanobanana-modal-title {
-        margin: 0 0 8px 0;
-        font-size: 1.4em;
-      }
-      .nanobanana-modal-desc {
-        color: var(--text-muted);
-        margin-bottom: 20px;
-      }
-      .nanobanana-button-container {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 20px;
-        padding-top: 15px;
-        border-top: 1px solid var(--background-modifier-border);
-      }
-      .nanobanana-btn {
-        padding: 8px 16px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 500;
-        border: none;
-        transition: all 0.2s ease;
-      }
-      .nanobanana-btn-cancel {
-        background: var(--background-modifier-border);
-        color: var(--text-normal);
-      }
-      .nanobanana-btn-cancel:hover {
-        background: var(--background-modifier-hover);
-      }
-      .nanobanana-btn-primary {
-        background: var(--interactive-accent);
-        color: var(--text-on-accent);
-      }
-      .nanobanana-btn-primary:hover {
-        background: var(--interactive-accent-hover);
-      }
-      .nanobanana-cartoon-settings {
-        padding: 10px;
-        margin: 10px 0;
-        border-radius: 8px;
-        background: var(--background-secondary);
-        border: 1px solid var(--background-modifier-border);
-      }
-      .nanobanana-cartoon-settings .setting-item {
-        padding: 8px 0;
-        border-bottom: none;
-      }
-    `;
-    this.contentEl.appendChild(style);
   }
 
   onClose() {

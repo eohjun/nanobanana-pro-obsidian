@@ -1,5 +1,5 @@
 import { App, TFile, TFolder, normalizePath } from 'obsidian';
-import { GenerationError } from '../types';
+import { GenerationError, GenerationErrorClass } from '../types';
 
 export class FileService {
   constructor(private app: App) {}
@@ -129,7 +129,7 @@ export class FileService {
     return mimeMap[mimeType] || 'png';
   }
 
-  private createError(type: GenerationError['type'], message: string): GenerationError {
-    return { type, message, retryable: false };
+  private createError(type: GenerationError['type'], message: string): GenerationErrorClass {
+    return new GenerationErrorClass(type, message, false);
   }
 }
