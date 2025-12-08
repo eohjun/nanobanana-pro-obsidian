@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import NanoBananaPlugin from './main';
-import { AIProvider, ImageStyle, ImageSize, PreferredLanguage, PROVIDER_CONFIGS, IMAGE_STYLES, LANGUAGE_NAMES } from './types';
+import { AIProvider, ImageStyle, ImageSize, PreferredLanguage, CartoonCuts, PROVIDER_CONFIGS, IMAGE_STYLES, LANGUAGE_NAMES } from './types';
 
 export class NanoBananaSettingTab extends PluginSettingTab {
   plugin: NanoBananaPlugin;
@@ -155,14 +155,53 @@ export class NanoBananaSettingTab extends PluginSettingTab {
           'poster': '🎨 Poster - Bold typography, strong imagery',
           'diagram': '📐 Diagram - Technical, clear connections',
           'mindmap': '🧠 Mind Map - Central concept with branches',
-          'timeline': '📅 Timeline - Progression and milestones'
+          'timeline': '📅 Timeline - Progression and milestones',
+          'cartoon': '🎬 Cartoon - Comic strip with sequential panels'
         })
         .setValue(this.plugin.settings.imageStyle)
         .onChange(async (value: ImageStyle) => {
           this.plugin.settings.imageStyle = value;
           await this.plugin.saveSettings();
+          this.display(); // Refresh to show/hide cartoon cuts settings
         })
       );
+
+    // Cartoon Cuts Settings (only shown when cartoon style is selected)
+    if (this.plugin.settings.imageStyle === 'cartoon') {
+      new Setting(containerEl)
+        .setName('Cartoon Panel Cuts')
+        .setDesc('Number of panels in the comic strip.')
+        .addDropdown(dropdown => dropdown
+          .addOptions({
+            '4': '4 cuts (2×2 grid)',
+            '6': '6 cuts (2×3 grid)',
+            '8': '8 cuts (2×4 grid)',
+            'custom': 'Custom number'
+          })
+          .setValue(this.plugin.settings.cartoonCuts)
+          .onChange(async (value: CartoonCuts) => {
+            this.plugin.settings.cartoonCuts = value;
+            await this.plugin.saveSettings();
+            this.display(); // Refresh to show/hide custom input
+          })
+        );
+
+      // Custom cuts input (only shown when 'custom' is selected)
+      if (this.plugin.settings.cartoonCuts === 'custom') {
+        new Setting(containerEl)
+          .setName('Custom Panel Count')
+          .setDesc('Enter a custom number of panels (2-12 recommended).')
+          .addText(text => text
+            .setPlaceholder('4')
+            .setValue(String(this.plugin.settings.customCartoonCuts))
+            .onChange(async (value) => {
+              const numValue = parseInt(value) || 4;
+              this.plugin.settings.customCartoonCuts = Math.max(2, Math.min(12, numValue));
+              await this.plugin.saveSettings();
+            })
+          );
+      }
+    }
 
     new Setting(containerEl)
       .setName('Image Resolution')

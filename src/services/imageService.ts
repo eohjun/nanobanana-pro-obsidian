@@ -12,7 +12,8 @@ export class ImageService {
     model: string,
     style: ImageStyle,
     preferredLanguage: PreferredLanguage,
-    imageSize: string = '4K'
+    imageSize: string = '4K',
+    cartoonCuts: number = 4
   ): Promise<ImageGenerationResult> {
     if (!apiKey) {
       throw this.createError('INVALID_API_KEY', 'Google API key is not configured');
@@ -34,9 +35,15 @@ export class ImageService {
         de: 'IMPORTANT: All text in the image MUST be in German (Deutsch). Titles, labels, descriptions, and all content should be written in German.'
       };
 
+      // Get style description, with special handling for cartoon style
+      let styleDescription = IMAGE_STYLES[style];
+      if (style === 'cartoon') {
+        styleDescription = this.getCartoonStyleDescription(cartoonCuts);
+      }
+
       // Format the prompt with style and language
       const fullPrompt = IMAGE_GENERATION_PROMPT_TEMPLATE
-        .replace('{style}', IMAGE_STYLES[style])
+        .replace('{style}', styleDescription)
         .replace('{prompt}', prompt) + '\n\n' + languageInstructions[preferredLanguage];
 
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -166,5 +173,34 @@ export class ImageService {
 
   private createError(type: GenerationError['type'], message: string, retryable = false): GenerationError {
     return { type, message, retryable };
+  }
+
+  /**
+   * Generate cartoon style description based on number of cuts
+   */
+  private getCartoonStyleDescription(cuts: number): string {
+    const layoutDescriptions: Record<number, string> = {
+      4: '2x2 grid layout (2 rows, 2 columns)',
+      6: '2x3 grid layout (2 rows, 3 columns) or 3x2 grid layout',
+      8: '2x4 grid layout (2 rows, 4 columns) or 4x2 grid layout'
+    };
+
+    const layout = layoutDescriptions[cuts] || `${cuts} sequential panels in a balanced grid`;
+
+    return `Comic strip / manga style illustration with exactly ${cuts} sequential panels arranged in a ${layout}.
+Each panel should:
+- Tell part of the story in clear visual sequence from panel 1 to panel ${cuts}
+- Feature expressive characters with consistent design across all panels
+- Include speech bubbles or thought bubbles where appropriate
+- Use bold black outlines and vibrant colors
+- Show dynamic compositions and varied camera angles
+- Have clear panel borders with small gaps between panels
+- Progress the narrative logically from beginning to end
+
+The overall style should be:
+- Modern comic/manga aesthetic with clean linework
+- High contrast colors for visual impact
+- Professional quality suitable for educational content
+- Easy to follow visual storytelling`;
   }
 }

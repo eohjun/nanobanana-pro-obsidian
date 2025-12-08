@@ -16,6 +16,8 @@ export const DEFAULT_SETTINGS: NanoBananaSettings = {
   imageStyle: 'infographic',
   imageSize: '4K',
   preferredLanguage: 'ko',
+  cartoonCuts: '4',
+  customCartoonCuts: 4,
 
   // UX Settings
   showPreviewBeforeGeneration: true,

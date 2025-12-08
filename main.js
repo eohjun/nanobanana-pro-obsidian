@@ -44,6 +44,8 @@ var DEFAULT_SETTINGS = {
   imageStyle: "infographic",
   imageSize: "4K",
   preferredLanguage: "ko",
+  cartoonCuts: "4",
+  customCartoonCuts: 4,
   // UX Settings
   showPreviewBeforeGeneration: true,
   attachmentFolder: "999-Attachments",
@@ -129,7 +131,8 @@ var IMAGE_STYLES = {
   poster: "Bold poster design with strong typography and imagery",
   diagram: "Technical diagram with clear connections and labels",
   mindmap: "Mind map style with central concept and branches",
-  timeline: "Timeline format showing progression and milestones"
+  timeline: "Timeline format showing progression and milestones",
+  cartoon: "Comic strip style with sequential panels telling a visual story"
 };
 
 // src/settings.ts
@@ -217,12 +220,37 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
         "poster": "\u{1F3A8} Poster - Bold typography, strong imagery",
         "diagram": "\u{1F4D0} Diagram - Technical, clear connections",
         "mindmap": "\u{1F9E0} Mind Map - Central concept with branches",
-        "timeline": "\u{1F4C5} Timeline - Progression and milestones"
+        "timeline": "\u{1F4C5} Timeline - Progression and milestones",
+        "cartoon": "\u{1F3AC} Cartoon - Comic strip with sequential panels"
       }).setValue(this.plugin.settings.imageStyle).onChange(async (value) => {
         this.plugin.settings.imageStyle = value;
         await this.plugin.saveSettings();
+        this.display();
       })
     );
+    if (this.plugin.settings.imageStyle === "cartoon") {
+      new import_obsidian.Setting(containerEl).setName("Cartoon Panel Cuts").setDesc("Number of panels in the comic strip.").addDropdown(
+        (dropdown) => dropdown.addOptions({
+          "4": "4 cuts (2\xD72 grid)",
+          "6": "6 cuts (2\xD73 grid)",
+          "8": "8 cuts (2\xD74 grid)",
+          "custom": "Custom number"
+        }).setValue(this.plugin.settings.cartoonCuts).onChange(async (value) => {
+          this.plugin.settings.cartoonCuts = value;
+          await this.plugin.saveSettings();
+          this.display();
+        })
+      );
+      if (this.plugin.settings.cartoonCuts === "custom") {
+        new import_obsidian.Setting(containerEl).setName("Custom Panel Count").setDesc("Enter a custom number of panels (2-12 recommended).").addText(
+          (text) => text.setPlaceholder("4").setValue(String(this.plugin.settings.customCartoonCuts)).onChange(async (value) => {
+            const numValue = parseInt(value) || 4;
+            this.plugin.settings.customCartoonCuts = Math.max(2, Math.min(12, numValue));
+            await this.plugin.saveSettings();
+          })
+        );
+      }
+    }
     new import_obsidian.Setting(containerEl).setName("Image Resolution").setDesc("Higher resolution = better quality (especially for Korean text). 4K recommended for best results.").addDropdown(
       (dropdown) => dropdown.addOptions({
         "1K": "1K - Standard Quality",
@@ -521,7 +549,7 @@ var ImageService = class {
   /**
    * Generate an infographic image using Google Gemini
    */
-  async generateImage(prompt, apiKey, model, style, preferredLanguage, imageSize = "4K") {
+  async generateImage(prompt, apiKey, model, style, preferredLanguage, imageSize = "4K", cartoonCuts = 4) {
     if (!apiKey) {
       throw this.createError("INVALID_API_KEY", "Google API key is not configured");
     }
@@ -538,7 +566,11 @@ var ImageService = class {
         fr: "IMPORTANT: All text in the image MUST be in French (Fran\xE7ais). Titles, labels, descriptions, and all content should be written in French.",
         de: "IMPORTANT: All text in the image MUST be in German (Deutsch). Titles, labels, descriptions, and all content should be written in German."
       };
-      const fullPrompt = IMAGE_GENERATION_PROMPT_TEMPLATE.replace("{style}", IMAGE_STYLES[style]).replace("{prompt}", prompt) + "\n\n" + languageInstructions[preferredLanguage];
+      let styleDescription = IMAGE_STYLES[style];
+      if (style === "cartoon") {
+        styleDescription = this.getCartoonStyleDescription(cartoonCuts);
+      }
+      const fullPrompt = IMAGE_GENERATION_PROMPT_TEMPLATE.replace("{style}", styleDescription).replace("{prompt}", prompt) + "\n\n" + languageInstructions[preferredLanguage];
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
       const response = await (0, import_obsidian3.requestUrl)({
         url,
@@ -647,6 +679,32 @@ var ImageService = class {
   }
   createError(type, message, retryable = false) {
     return { type, message, retryable };
+  }
+  /**
+   * Generate cartoon style description based on number of cuts
+   */
+  getCartoonStyleDescription(cuts) {
+    const layoutDescriptions = {
+      4: "2x2 grid layout (2 rows, 2 columns)",
+      6: "2x3 grid layout (2 rows, 3 columns) or 3x2 grid layout",
+      8: "2x4 grid layout (2 rows, 4 columns) or 4x2 grid layout"
+    };
+    const layout = layoutDescriptions[cuts] || `${cuts} sequential panels in a balanced grid`;
+    return `Comic strip / manga style illustration with exactly ${cuts} sequential panels arranged in a ${layout}.
+Each panel should:
+- Tell part of the story in clear visual sequence from panel 1 to panel ${cuts}
+- Feature expressive characters with consistent design across all panels
+- Include speech bubbles or thought bubbles where appropriate
+- Use bold black outlines and vibrant colors
+- Show dynamic compositions and varied camera angles
+- Have clear panel borders with small gaps between panels
+- Progress the narrative logically from beginning to end
+
+The overall style should be:
+- Modern comic/manga aesthetic with clean linework
+- High contrast colors for visual impact
+- Professional quality suitable for educational content
+- Easy to follow visual storytelling`;
   }
 };
 
@@ -1368,10 +1426,13 @@ var PreviewModal = class extends import_obsidian6.Modal {
 // src/quickOptionsModal.ts
 var import_obsidian7 = require("obsidian");
 var QuickOptionsModal = class extends import_obsidian7.Modal {
-  constructor(app, currentStyle, currentSize, onSubmit) {
+  constructor(app, currentStyle, currentSize, currentCartoonCuts, currentCustomCuts, onSubmit) {
     super(app);
+    this.cartoonSettingsContainer = null;
     this.selectedStyle = currentStyle;
     this.selectedSize = currentSize;
+    this.selectedCartoonCuts = currentCartoonCuts;
+    this.selectedCustomCuts = currentCustomCuts;
     this.onSubmit = onSubmit;
   }
   onOpen() {
@@ -1392,11 +1453,15 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
         "poster": "\u{1F3A8} Poster - Bold Typography & Imagery",
         "diagram": "\u{1F4D0} Diagram - Technical Connections",
         "mindmap": "\u{1F9E0} Mind Map - Central Concept & Branches",
-        "timeline": "\u{1F4C5} Timeline - Progression & Milestones"
+        "timeline": "\u{1F4C5} Timeline - Progression & Milestones",
+        "cartoon": "\u{1F3AC} Cartoon - Comic Strip Panels"
       }).setValue(this.selectedStyle).onChange((value) => {
         this.selectedStyle = value;
+        this.updateCartoonSettings();
       })
     );
+    this.cartoonSettingsContainer = contentEl.createDiv({ cls: "nanobanana-cartoon-settings" });
+    this.updateCartoonSettings();
     new import_obsidian7.Setting(contentEl).setName("Image Resolution").setDesc("Higher resolution = better quality (4K recommended for Korean text)").addDropdown(
       (dropdown) => dropdown.addOptions({
         "1K": "1K - Standard Quality",
@@ -1415,7 +1480,9 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
       this.onSubmit({
         confirmed: false,
         imageStyle: this.selectedStyle,
-        imageSize: this.selectedSize
+        imageSize: this.selectedSize,
+        cartoonCuts: this.selectedCartoonCuts,
+        customCartoonCuts: this.selectedCustomCuts
       });
       this.close();
     };
@@ -1427,11 +1494,42 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
       this.onSubmit({
         confirmed: true,
         imageStyle: this.selectedStyle,
-        imageSize: this.selectedSize
+        imageSize: this.selectedSize,
+        cartoonCuts: this.selectedCartoonCuts,
+        customCartoonCuts: this.selectedCustomCuts
       });
       this.close();
     };
     this.addStyles();
+  }
+  updateCartoonSettings() {
+    if (!this.cartoonSettingsContainer)
+      return;
+    this.cartoonSettingsContainer.empty();
+    if (this.selectedStyle !== "cartoon") {
+      this.cartoonSettingsContainer.style.display = "none";
+      return;
+    }
+    this.cartoonSettingsContainer.style.display = "block";
+    new import_obsidian7.Setting(this.cartoonSettingsContainer).setName("Panel Cuts").setDesc("Number of panels in the comic strip").addDropdown(
+      (dropdown) => dropdown.addOptions({
+        "4": "4 cuts (2\xD72 grid)",
+        "6": "6 cuts (2\xD73 grid)",
+        "8": "8 cuts (2\xD74 grid)",
+        "custom": "Custom number"
+      }).setValue(this.selectedCartoonCuts).onChange((value) => {
+        this.selectedCartoonCuts = value;
+        this.updateCartoonSettings();
+      })
+    );
+    if (this.selectedCartoonCuts === "custom") {
+      new import_obsidian7.Setting(this.cartoonSettingsContainer).setName("Custom Panel Count").setDesc("Enter number of panels (2-12 recommended)").addText(
+        (text) => text.setPlaceholder("4").setValue(String(this.selectedCustomCuts)).onChange((value) => {
+          const numValue = parseInt(value) || 4;
+          this.selectedCustomCuts = Math.max(2, Math.min(12, numValue));
+        })
+      );
+    }
   }
   addStyles() {
     const style = document.createElement("style");
@@ -1476,6 +1574,17 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
       }
       .nanobanana-btn-primary:hover {
         background: var(--interactive-accent-hover);
+      }
+      .nanobanana-cartoon-settings {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 8px;
+        background: var(--background-secondary);
+        border: 1px solid var(--background-modifier-border);
+      }
+      .nanobanana-cartoon-settings .setting-item {
+        padding: 8px 0;
+        border-bottom: none;
       }
     `;
     this.contentEl.appendChild(style);
@@ -1560,6 +1669,7 @@ var NanoBananaPlugin = class extends import_obsidian8.Plugin {
     }
     const selectedStyle = quickOptions.imageStyle;
     const selectedSize = quickOptions.imageSize;
+    const selectedCartoonCuts = this.getCartoonCutsNumber(quickOptions.cartoonCuts, quickOptions.customCartoonCuts);
     this.isGenerating = true;
     this.lastNoteFile = noteFile;
     let progressModal = null;
@@ -1620,7 +1730,8 @@ ${finalPrompt}`;
           this.settings.imageModel,
           selectedStyle,
           this.settings.preferredLanguage,
-          selectedSize
+          selectedSize,
+          selectedCartoonCuts
         );
       });
       this.updateProgress(progressModal, {
@@ -1743,7 +1854,8 @@ ${finalPrompt}`;
           this.settings.imageModel,
           this.settings.imageStyle,
           this.settings.preferredLanguage,
-          this.settings.imageSize
+          this.settings.imageSize,
+          this.getCartoonCutsNumber(this.settings.cartoonCuts, this.settings.customCartoonCuts)
         );
       });
       this.updateProgress(progressModal, {
@@ -1803,10 +1915,21 @@ ${finalPrompt}`;
         this.app,
         this.settings.imageStyle,
         this.settings.imageSize,
+        this.settings.cartoonCuts,
+        this.settings.customCartoonCuts,
         (result) => resolve(result)
       );
       modal.open();
     });
+  }
+  /**
+   * Calculate actual number of cartoon cuts
+   */
+  getCartoonCutsNumber(cartoonCuts, customCuts) {
+    if (cartoonCuts === "custom") {
+      return customCuts;
+    }
+    return parseInt(cartoonCuts);
   }
   /**
    * Execute operation with auto-retry

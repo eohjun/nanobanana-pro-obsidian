@@ -1,5 +1,5 @@
 import { Plugin, MarkdownView, Notice, TFile } from 'obsidian';
-import { NanoBananaSettings, GenerationError, ProgressState, ImageStyle, ImageSize } from './types';
+import { NanoBananaSettings, GenerationError, ProgressState, ImageStyle, ImageSize, CartoonCuts } from './types';
 import { DEFAULT_SETTINGS } from './settingsData';
 import { NanoBananaSettingTab } from './settings';
 import { PromptService } from './services/promptService';
@@ -108,6 +108,7 @@ export default class NanoBananaPlugin extends Plugin {
     // Use selected options for this generation
     const selectedStyle = quickOptions.imageStyle;
     const selectedSize = quickOptions.imageSize;
+    const selectedCartoonCuts = this.getCartoonCutsNumber(quickOptions.cartoonCuts, quickOptions.customCartoonCuts);
 
     this.isGenerating = true;
     this.lastNoteFile = noteFile;
@@ -187,7 +188,8 @@ export default class NanoBananaPlugin extends Plugin {
           this.settings.imageModel,
           selectedStyle,
           this.settings.preferredLanguage,
-          selectedSize
+          selectedSize,
+          selectedCartoonCuts
         );
       });
 
@@ -342,7 +344,8 @@ export default class NanoBananaPlugin extends Plugin {
           this.settings.imageModel,
           this.settings.imageStyle,
           this.settings.preferredLanguage,
-          this.settings.imageSize
+          this.settings.imageSize,
+          this.getCartoonCutsNumber(this.settings.cartoonCuts, this.settings.customCartoonCuts)
         );
       });
 
@@ -410,10 +413,22 @@ export default class NanoBananaPlugin extends Plugin {
         this.app,
         this.settings.imageStyle,
         this.settings.imageSize,
+        this.settings.cartoonCuts,
+        this.settings.customCartoonCuts,
         (result) => resolve(result)
       );
       modal.open();
     });
+  }
+
+  /**
+   * Calculate actual number of cartoon cuts
+   */
+  private getCartoonCutsNumber(cartoonCuts: CartoonCuts, customCuts: number): number {
+    if (cartoonCuts === 'custom') {
+      return customCuts;
+    }
+    return parseInt(cartoonCuts);
   }
 
   /**

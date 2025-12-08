@@ -1,11 +1,13 @@
 // Provider types
 export type AIProvider = 'openai' | 'google' | 'anthropic' | 'xai';
 
-export type ImageStyle = 'infographic' | 'poster' | 'diagram' | 'mindmap' | 'timeline';
+export type ImageStyle = 'infographic' | 'poster' | 'diagram' | 'mindmap' | 'timeline' | 'cartoon';
 
 export type PreferredLanguage = 'ko' | 'en' | 'ja' | 'zh' | 'es' | 'fr' | 'de';
 
 export type ImageSize = '1K' | '2K' | '4K';
+
+export type CartoonCuts = '4' | '6' | '8' | 'custom';
 
 // Plugin settings interface
 export interface NanoBananaSettings {
@@ -24,6 +26,8 @@ export interface NanoBananaSettings {
   imageStyle: ImageStyle;
   imageSize: ImageSize;
   preferredLanguage: PreferredLanguage;
+  cartoonCuts: CartoonCuts;
+  customCartoonCuts: number;
 
   // UX Settings
   showPreviewBeforeGeneration: boolean;
@@ -130,7 +134,8 @@ export const IMAGE_STYLES: Record<ImageStyle, string> = {
   poster: 'Bold poster design with strong typography and imagery',
   diagram: 'Technical diagram with clear connections and labels',
   mindmap: 'Mind map style with central concept and branches',
-  timeline: 'Timeline format showing progression and milestones'
+  timeline: 'Timeline format showing progression and milestones',
+  cartoon: 'Comic strip style with sequential panels telling a visual story'
 };
 
 export const LANGUAGE_NAMES: Record<PreferredLanguage, string> = {
