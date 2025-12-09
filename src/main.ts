@@ -226,7 +226,7 @@ export default class NanoBananaPlugin extends Plugin {
       if (progressModal) {
         progressModal.showSuccess(imagePath);
       } else {
-        new Notice('✅ Knowledge poster generated successfully!');
+        new Notice('✅ knowledge poster generated successfully!');
       }
 
     } catch (error) {
@@ -235,7 +235,7 @@ export default class NanoBananaPlugin extends Plugin {
       if (progressModal) {
         progressModal.showError(genError);
       } else {
-        new Notice(`❌ Generation failed: ${genError.message}`);
+        new Notice(`❌ generation failed: ${genError.message}`);
       }
 
       // Enhanced error logging for debugging
@@ -287,10 +287,10 @@ export default class NanoBananaPlugin extends Plugin {
       await navigator.clipboard.writeText(result.prompt);
       this.lastPrompt = result.prompt;
 
-      new Notice('✅ Prompt copied to clipboard!');
+      new Notice('✅ prompt copied to clipboard!');
     } catch (error) {
       const genError = error as GenerationError;
-      new Notice(`❌ Failed: ${genError.message}`);
+      new Notice(`❌ failed: ${genError.message}`);
     }
   }
 
@@ -373,7 +373,7 @@ export default class NanoBananaPlugin extends Plugin {
       if (progressModal) {
         progressModal.showSuccess(imagePath);
       } else {
-        new Notice('✅ Poster regenerated successfully!');
+        new Notice('✅ poster regenerated successfully!');
       }
 
     } catch (error) {
@@ -381,7 +381,7 @@ export default class NanoBananaPlugin extends Plugin {
       if (progressModal) {
         progressModal.showError(genError);
       } else {
-        new Notice(`❌ Regeneration failed: ${genError.message}`);
+        new Notice(`❌ regeneration failed: ${genError.message}`);
       }
     } finally {
       this.isGenerating = false;

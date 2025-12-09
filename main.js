@@ -823,7 +823,7 @@ var import_obsidian5 = require("obsidian");
 var MESSAGES = {
   ko: {
     // Progress Modal
-    progressTitle: "\u{1F3A8} Knowledge poster \uC0DD\uC131 \uC911...",
+    progressTitle: "\u{1F3A8} knowledge poster \uC0DD\uC131 \uC911...",
     estimatedTime: "\u23F1\uFE0F \uC608\uC0C1 \uC18C\uC694 \uC2DC\uAC04: \uC57D 15-30\uCD08",
     cancel: "\uCDE8\uC18C",
     // Progress Steps
@@ -833,7 +833,7 @@ var MESSAGES = {
     stepSaving: "\uD30C\uC77C \uC800\uC7A5",
     stepEmbedding: "\uB178\uD2B8\uC5D0 \uC0BD\uC785",
     // Success
-    successTitle: "\u2705 Knowledge poster \uC0DD\uC131 \uC644\uB8CC!",
+    successTitle: "\u2705 knowledge poster \uC0DD\uC131 \uC644\uB8CC!",
     successSaved: "\u{1F4C1} \uC800\uC7A5 \uC704\uCE58",
     confirm: "\uD655\uC778",
     // Error
@@ -1007,7 +1007,7 @@ var MESSAGES = {
   },
   es: {
     // Progress Modal
-    progressTitle: "\u{1F3A8} Generando p\xF3ster de conocimiento...",
+    progressTitle: "\u{1F3A8} generando p\xF3ster de conocimiento...",
     estimatedTime: "\u23F1\uFE0F Tiempo estimado: aproximadamente 15-30 segundos",
     cancel: "Cancelar",
     // Progress Steps
@@ -1017,12 +1017,12 @@ var MESSAGES = {
     stepSaving: "Guardando archivo",
     stepEmbedding: "Insertando en nota",
     // Success
-    successTitle: "\u2705 \xA1P\xF3ster de conocimiento creado!",
+    successTitle: "\u2705 \xA1p\xF3ster de conocimiento creado!",
     successSaved: "\u{1F4C1} Guardado en",
     confirm: "Aceptar",
     // Error
-    errorTitle: "\u274C Generaci\xF3n fallida",
-    errorSolutions: "\u{1F4A1} Soluciones:",
+    errorTitle: "\u274C generaci\xF3n fallida",
+    errorSolutions: "\u{1F4A1} soluciones:",
     retry: "Reintentar",
     close: "Cerrar",
     // Error Suggestions
@@ -1038,22 +1038,22 @@ var MESSAGES = {
     suggestionContentMayBeSensitive: "El contenido puede contener material sensible",
     suggestionAddContent: "Por favor, agrega contenido a tu nota",
     // Preview Modal
-    previewTitle: "\u{1F4DD} Vista previa del prompt",
+    previewTitle: "\u{1F4DD} vista previa del prompt",
     previewPromptLabel: "Prompt generado (editable):",
     previewCharacters: "caracteres",
-    previewTipsTitle: "\u{1F4A1} Consejos:",
+    previewTipsTitle: "\u{1F4A1} consejos:",
     previewTip1: "Puedes editar el prompt para ajustar el estilo deseado",
     previewTip2: "Agregar colores, dise\xF1os y elementos espec\xEDficos dar\xE1 mejores resultados",
     previewTip3: 'Usa el bot\xF3n "Regenerar" para crear un nuevo prompt',
-    previewGenerate: "\u{1F3A8} Generar imagen",
-    previewRegenerate: "\u{1F504} Regenerar",
-    previewPromptModel: "\u{1F916} Modelo de prompt",
-    previewImageModel: "\u{1F5BC}\uFE0F Modelo de imagen",
-    previewStyle: "\u{1F4CA} Estilo"
+    previewGenerate: "\u{1F3A8} generar imagen",
+    previewRegenerate: "\u{1F504} regenerar",
+    previewPromptModel: "\u{1F916} modelo de prompt",
+    previewImageModel: "\u{1F5BC}\uFE0F modelo de imagen",
+    previewStyle: "\u{1F4CA} estilo"
   },
   fr: {
     // Progress Modal
-    progressTitle: "\u{1F3A8} G\xE9n\xE9ration de l'affiche de connaissances...",
+    progressTitle: "\u{1F3A8} g\xE9n\xE9ration de l'affiche de connaissances...",
     estimatedTime: "\u23F1\uFE0F Temps estim\xE9 : environ 15-30 secondes",
     cancel: "Annuler",
     // Progress Steps
@@ -1063,12 +1063,12 @@ var MESSAGES = {
     stepSaving: "Enregistrement du fichier",
     stepEmbedding: "Insertion dans la note",
     // Success
-    successTitle: "\u2705 Affiche de connaissances cr\xE9\xE9e !",
+    successTitle: "\u2705 affiche de connaissances cr\xE9\xE9e !",
     successSaved: "\u{1F4C1} Enregistr\xE9 dans",
     confirm: "OK",
     // Error
-    errorTitle: "\u274C \xC9chec de la g\xE9n\xE9ration",
-    errorSolutions: "\u{1F4A1} Solutions :",
+    errorTitle: "\u274C \xE9chec de la g\xE9n\xE9ration",
+    errorSolutions: "\u{1F4A1} solutions :",
     retry: "R\xE9essayer",
     close: "Fermer",
     // Error Suggestions
@@ -1084,22 +1084,22 @@ var MESSAGES = {
     suggestionContentMayBeSensitive: "Le contenu peut contenir du mat\xE9riel sensible",
     suggestionAddContent: "Veuillez ajouter du contenu \xE0 votre note",
     // Preview Modal
-    previewTitle: "\u{1F4DD} Aper\xE7u du prompt",
+    previewTitle: "\u{1F4DD} aper\xE7u du prompt",
     previewPromptLabel: "Prompt g\xE9n\xE9r\xE9 (modifiable):",
     previewCharacters: "caract\xE8res",
-    previewTipsTitle: "\u{1F4A1} Conseils:",
+    previewTipsTitle: "\u{1F4A1} conseils:",
     previewTip1: "Vous pouvez modifier le prompt pour ajuster le style souhait\xE9",
     previewTip2: "Ajouter des couleurs, des mises en page et des \xE9l\xE9ments sp\xE9cifiques donnera de meilleurs r\xE9sultats",
     previewTip3: 'Utilisez le bouton "R\xE9g\xE9n\xE9rer" pour cr\xE9er un nouveau prompt',
-    previewGenerate: "\u{1F3A8} G\xE9n\xE9rer l'image",
-    previewRegenerate: "\u{1F504} R\xE9g\xE9n\xE9rer",
-    previewPromptModel: "\u{1F916} Mod\xE8le de prompt",
-    previewImageModel: "\u{1F5BC}\uFE0F Mod\xE8le d'image",
-    previewStyle: "\u{1F4CA} Style"
+    previewGenerate: "\u{1F3A8} g\xE9n\xE9rer l'image",
+    previewRegenerate: "\u{1F504} r\xE9g\xE9n\xE9rer",
+    previewPromptModel: "\u{1F916} mod\xE8le de prompt",
+    previewImageModel: "\u{1F5BC}\uFE0F mod\xE8le d'image",
+    previewStyle: "\u{1F4CA} style"
   },
   de: {
     // Progress Modal
-    progressTitle: "\u{1F3A8} Wissensposter wird erstellt...",
+    progressTitle: "\u{1F3A8} wissensposter wird erstellt...",
     estimatedTime: "\u23F1\uFE0F Gesch\xE4tzte Zeit: etwa 15-30 Sekunden",
     cancel: "Abbrechen",
     // Progress Steps
@@ -1109,12 +1109,12 @@ var MESSAGES = {
     stepSaving: "Datei speichern",
     stepEmbedding: "In Notiz einf\xFCgen",
     // Success
-    successTitle: "\u2705 Wissensposter erstellt!",
+    successTitle: "\u2705 wissensposter erstellt!",
     successSaved: "\u{1F4C1} Gespeichert in",
     confirm: "OK",
     // Error
-    errorTitle: "\u274C Generierung fehlgeschlagen",
-    errorSolutions: "\u{1F4A1} L\xF6sungen:",
+    errorTitle: "\u274C generierung fehlgeschlagen",
+    errorSolutions: "\u{1F4A1} l\xF6sungen:",
     retry: "Wiederholen",
     close: "Schlie\xDFen",
     // Error Suggestions
@@ -1130,18 +1130,18 @@ var MESSAGES = {
     suggestionContentMayBeSensitive: "Der Inhalt kann sensibles Material enthalten",
     suggestionAddContent: "Bitte f\xFCgen Sie Inhalt zu Ihrer Notiz hinzu",
     // Preview Modal
-    previewTitle: "\u{1F4DD} Prompt-Vorschau",
+    previewTitle: "\u{1F4DD} prompt-Vorschau",
     previewPromptLabel: "Generierter Prompt (bearbeitbar):",
     previewCharacters: "Zeichen",
-    previewTipsTitle: "\u{1F4A1} Tipps:",
+    previewTipsTitle: "\u{1F4A1} tipps:",
     previewTip1: "Sie k\xF6nnen den Prompt bearbeiten, um den gew\xFCnschten Stil anzupassen",
     previewTip2: "Das Hinzuf\xFCgen spezifischer Farben, Layouts und Elemente f\xFChrt zu besseren Ergebnissen",
     previewTip3: 'Verwenden Sie die Schaltfl\xE4che "Regenerieren", um einen neuen Prompt zu erstellen',
-    previewGenerate: "\u{1F3A8} Bild generieren",
-    previewRegenerate: "\u{1F504} Regenerieren",
-    previewPromptModel: "\u{1F916} Prompt-Modell",
-    previewImageModel: "\u{1F5BC}\uFE0F Bildmodell",
-    previewStyle: "\u{1F4CA} Stil"
+    previewGenerate: "\u{1F3A8} bild generieren",
+    previewRegenerate: "\u{1F504} regenerieren",
+    previewPromptModel: "\u{1F916} prompt-Modell",
+    previewImageModel: "\u{1F5BC}\uFE0F bildmodell",
+    previewStyle: "\u{1F4CA} stil"
   }
 };
 function getMessages(language) {
@@ -1710,14 +1710,14 @@ ${finalPrompt}`;
       if (progressModal) {
         progressModal.showSuccess(imagePath);
       } else {
-        new import_obsidian8.Notice("\u2705 Knowledge poster generated successfully!");
+        new import_obsidian8.Notice("\u2705 knowledge poster generated successfully!");
       }
     } catch (error) {
       const genError = error;
       if (progressModal) {
         progressModal.showError(genError);
       } else {
-        new import_obsidian8.Notice(`\u274C Generation failed: ${genError.message}`);
+        new import_obsidian8.Notice(`\u274C generation failed: ${genError.message}`);
       }
       console.error("NanoBanana PRO error:", error);
       if (error instanceof Error) {
@@ -1759,10 +1759,10 @@ ${finalPrompt}`;
       );
       await navigator.clipboard.writeText(result.prompt);
       this.lastPrompt = result.prompt;
-      new import_obsidian8.Notice("\u2705 Prompt copied to clipboard!");
+      new import_obsidian8.Notice("\u2705 prompt copied to clipboard!");
     } catch (error) {
       const genError = error;
-      new import_obsidian8.Notice(`\u274C Failed: ${genError.message}`);
+      new import_obsidian8.Notice(`\u274C failed: ${genError.message}`);
     }
   }
   /**
@@ -1829,14 +1829,14 @@ ${finalPrompt}`;
       if (progressModal) {
         progressModal.showSuccess(imagePath);
       } else {
-        new import_obsidian8.Notice("\u2705 Poster regenerated successfully!");
+        new import_obsidian8.Notice("\u2705 poster regenerated successfully!");
       }
     } catch (error) {
       const genError = error;
       if (progressModal) {
         progressModal.showError(genError);
       } else {
-        new import_obsidian8.Notice(`\u274C Regeneration failed: ${genError.message}`);
+        new import_obsidian8.Notice(`\u274C regeneration failed: ${genError.message}`);
       }
     } finally {
       this.isGenerating = false;

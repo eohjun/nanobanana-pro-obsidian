@@ -56,7 +56,7 @@ export interface UIMessages {
 export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
   ko: {
     // Progress Modal
-    progressTitle: '🎨 Knowledge poster 생성 중...',
+    progressTitle: '🎨 knowledge poster 생성 중...',
     estimatedTime: '⏱️ 예상 소요 시간: 약 15-30초',
     cancel: '취소',
 
@@ -68,7 +68,7 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     stepEmbedding: '노트에 삽입',
 
     // Success
-    successTitle: '✅ Knowledge poster 생성 완료!',
+    successTitle: '✅ knowledge poster 생성 완료!',
     successSaved: '📁 저장 위치',
     confirm: '확인',
 
@@ -264,7 +264,7 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
 
   es: {
     // Progress Modal
-    progressTitle: '🎨 Generando póster de conocimiento...',
+    progressTitle: '🎨 generando póster de conocimiento...',
     estimatedTime: '⏱️ Tiempo estimado: aproximadamente 15-30 segundos',
     cancel: 'Cancelar',
 
@@ -276,13 +276,13 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     stepEmbedding: 'Insertando en nota',
 
     // Success
-    successTitle: '✅ ¡Póster de conocimiento creado!',
+    successTitle: '✅ ¡póster de conocimiento creado!',
     successSaved: '📁 Guardado en',
     confirm: 'Aceptar',
 
     // Error
-    errorTitle: '❌ Generación fallida',
-    errorSolutions: '💡 Soluciones:',
+    errorTitle: '❌ generación fallida',
+    errorSolutions: '💡 soluciones:',
     retry: 'Reintentar',
     close: 'Cerrar',
 
@@ -300,23 +300,23 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     suggestionAddContent: 'Por favor, agrega contenido a tu nota',
 
     // Preview Modal
-    previewTitle: '📝 Vista previa del prompt',
+    previewTitle: '📝 vista previa del prompt',
     previewPromptLabel: 'Prompt generado (editable):',
     previewCharacters: 'caracteres',
-    previewTipsTitle: '💡 Consejos:',
+    previewTipsTitle: '💡 consejos:',
     previewTip1: 'Puedes editar el prompt para ajustar el estilo deseado',
     previewTip2: 'Agregar colores, diseños y elementos específicos dará mejores resultados',
     previewTip3: 'Usa el botón "Regenerar" para crear un nuevo prompt',
-    previewGenerate: '🎨 Generar imagen',
-    previewRegenerate: '🔄 Regenerar',
-    previewPromptModel: '🤖 Modelo de prompt',
-    previewImageModel: '🖼️ Modelo de imagen',
-    previewStyle: '📊 Estilo'
+    previewGenerate: '🎨 generar imagen',
+    previewRegenerate: '🔄 regenerar',
+    previewPromptModel: '🤖 modelo de prompt',
+    previewImageModel: '🖼️ modelo de imagen',
+    previewStyle: '📊 estilo'
   },
 
   fr: {
     // Progress Modal
-    progressTitle: '🎨 Génération de l\'affiche de connaissances...',
+    progressTitle: '🎨 génération de l\'affiche de connaissances...',
     estimatedTime: '⏱️ Temps estimé : environ 15-30 secondes',
     cancel: 'Annuler',
 
@@ -328,13 +328,13 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     stepEmbedding: 'Insertion dans la note',
 
     // Success
-    successTitle: '✅ Affiche de connaissances créée !',
+    successTitle: '✅ affiche de connaissances créée !',
     successSaved: '📁 Enregistré dans',
     confirm: 'OK',
 
     // Error
-    errorTitle: '❌ Échec de la génération',
-    errorSolutions: '💡 Solutions :',
+    errorTitle: '❌ échec de la génération',
+    errorSolutions: '💡 solutions :',
     retry: 'Réessayer',
     close: 'Fermer',
 
@@ -352,23 +352,23 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     suggestionAddContent: 'Veuillez ajouter du contenu à votre note',
 
     // Preview Modal
-    previewTitle: '📝 Aperçu du prompt',
+    previewTitle: '📝 aperçu du prompt',
     previewPromptLabel: 'Prompt généré (modifiable):',
     previewCharacters: 'caractères',
-    previewTipsTitle: '💡 Conseils:',
+    previewTipsTitle: '💡 conseils:',
     previewTip1: 'Vous pouvez modifier le prompt pour ajuster le style souhaité',
     previewTip2: 'Ajouter des couleurs, des mises en page et des éléments spécifiques donnera de meilleurs résultats',
     previewTip3: 'Utilisez le bouton "Régénérer" pour créer un nouveau prompt',
-    previewGenerate: '🎨 Générer l\'image',
-    previewRegenerate: '🔄 Régénérer',
-    previewPromptModel: '🤖 Modèle de prompt',
-    previewImageModel: '🖼️ Modèle d\'image',
-    previewStyle: '📊 Style'
+    previewGenerate: '🎨 générer l\'image',
+    previewRegenerate: '🔄 régénérer',
+    previewPromptModel: '🤖 modèle de prompt',
+    previewImageModel: '🖼️ modèle d\'image',
+    previewStyle: '📊 style'
   },
 
   de: {
     // Progress Modal
-    progressTitle: '🎨 Wissensposter wird erstellt...',
+    progressTitle: '🎨 wissensposter wird erstellt...',
     estimatedTime: '⏱️ Geschätzte Zeit: etwa 15-30 Sekunden',
     cancel: 'Abbrechen',
 
@@ -380,13 +380,13 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     stepEmbedding: 'In Notiz einfügen',
 
     // Success
-    successTitle: '✅ Wissensposter erstellt!',
+    successTitle: '✅ wissensposter erstellt!',
     successSaved: '📁 Gespeichert in',
     confirm: 'OK',
 
     // Error
-    errorTitle: '❌ Generierung fehlgeschlagen',
-    errorSolutions: '💡 Lösungen:',
+    errorTitle: '❌ generierung fehlgeschlagen',
+    errorSolutions: '💡 lösungen:',
     retry: 'Wiederholen',
     close: 'Schließen',
 
@@ -404,18 +404,18 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     suggestionAddContent: 'Bitte fügen Sie Inhalt zu Ihrer Notiz hinzu',
 
     // Preview Modal
-    previewTitle: '📝 Prompt-Vorschau',
+    previewTitle: '📝 prompt-Vorschau',
     previewPromptLabel: 'Generierter Prompt (bearbeitbar):',
     previewCharacters: 'Zeichen',
-    previewTipsTitle: '💡 Tipps:',
+    previewTipsTitle: '💡 tipps:',
     previewTip1: 'Sie können den Prompt bearbeiten, um den gewünschten Stil anzupassen',
     previewTip2: 'Das Hinzufügen spezifischer Farben, Layouts und Elemente führt zu besseren Ergebnissen',
     previewTip3: 'Verwenden Sie die Schaltfläche "Regenerieren", um einen neuen Prompt zu erstellen',
-    previewGenerate: '🎨 Bild generieren',
-    previewRegenerate: '🔄 Regenerieren',
-    previewPromptModel: '🤖 Prompt-Modell',
-    previewImageModel: '🖼️ Bildmodell',
-    previewStyle: '📊 Stil'
+    previewGenerate: '🎨 bild generieren',
+    previewRegenerate: '🔄 regenerieren',
+    previewPromptModel: '🤖 prompt-Modell',
+    previewImageModel: '🖼️ bildmodell',
+    previewStyle: '📊 stil'
   }
 };
 
