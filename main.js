@@ -777,14 +777,26 @@ var FileService = class {
   }
   /**
    * Ensure a folder exists, creating it if necessary
+   * Cross-platform safe: handles Git sync scenarios where folder exists but index hasn't updated
    */
   async ensureFolderExists(folderPath) {
     const normalizedPath = (0, import_obsidian4.normalizePath)(folderPath);
-    const folder = this.app.vault.getAbstractFileByPath(normalizedPath);
-    if (!folder) {
-      await this.app.vault.createFolder(normalizedPath);
-    } else if (!(folder instanceof import_obsidian4.TFolder)) {
+    const existing = this.app.vault.getAbstractFileByPath(normalizedPath);
+    if (existing instanceof import_obsidian4.TFolder) {
+      return;
+    }
+    if (existing instanceof import_obsidian4.TFile) {
       throw this.createError("SAVE_ERROR", `${folderPath} exists but is not a folder`);
+    }
+    try {
+      await this.app.vault.createFolder(normalizedPath);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      if (msg.toLowerCase().includes("already exists")) {
+        console.log(`[NanoBanana] Folder already exists (sync OK): ${normalizedPath}`);
+        return;
+      }
+      throw this.createError("SAVE_ERROR", `Failed to create folder: ${msg}`);
     }
   }
   /**

@@ -91,15 +91,33 @@ export class FileService {
 
   /**
    * Ensure a folder exists, creating it if necessary
+   * Cross-platform safe: handles Git sync scenarios where folder exists but index hasn't updated
    */
   private async ensureFolderExists(folderPath: string): Promise<void> {
     const normalizedPath = normalizePath(folderPath);
-    const folder = this.app.vault.getAbstractFileByPath(normalizedPath);
+    const existing = this.app.vault.getAbstractFileByPath(normalizedPath);
 
-    if (!folder) {
-      await this.app.vault.createFolder(normalizedPath);
-    } else if (!(folder instanceof TFolder)) {
+    // Already exists as folder in index
+    if (existing instanceof TFolder) {
+      return;
+    }
+
+    // Exists as file - error
+    if (existing instanceof TFile) {
       throw this.createError('SAVE_ERROR', `${folderPath} exists but is not a folder`);
+    }
+
+    // Not in index - try to create (may already exist from Git sync)
+    try {
+      await this.app.vault.createFolder(normalizedPath);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      // "Folder already exists" is OK (Git sync scenario on iOS/Android)
+      if (msg.toLowerCase().includes('already exists')) {
+        console.log(`[NanoBanana] Folder already exists (sync OK): ${normalizedPath}`);
+        return;
+      }
+      throw this.createError('SAVE_ERROR', `Failed to create folder: ${msg}`);
     }
   }
 
