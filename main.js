@@ -222,12 +222,12 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
     );
     new import_obsidian.Setting(containerEl).setName("Image style").setDesc("Default style for generated posters.").addDropdown(
       (dropdown) => dropdown.addOptions({
-        "infographic": "\u{1F4CA} infographic - charts, icons, visual hierarchy",
-        "poster": "\u{1F3A8} poster - bold typography, strong imagery",
-        "diagram": "\u{1F4D0} diagram - technical, clear connections",
-        "mindmap": "\u{1F9E0} mind map - central concept with branches",
-        "timeline": "\u{1F4C5} timeline - progression and milestones",
-        "cartoon": "\u{1F3AC} cartoon - comic strip with sequential panels"
+        "infographic": "\u{1F4CA} Infographic - charts, icons, visual hierarchy",
+        "poster": "\u{1F3A8} Poster - bold typography, strong imagery",
+        "diagram": "\u{1F4D0} Diagram - technical, clear connections",
+        "mindmap": "\u{1F9E0} Mind map - central concept with branches",
+        "timeline": "\u{1F4C5} Timeline - progression and milestones",
+        "cartoon": "\u{1F3AC} Cartoon - comic strip with sequential panels"
       }).setValue(this.plugin.settings.imageStyle).onChange(async (value) => {
         this.plugin.settings.imageStyle = value;
         await this.plugin.saveSettings();
@@ -323,12 +323,12 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
     });
     const linksDiv = aboutDiv.createDiv({ cls: "nanobanana-links" });
     linksDiv.createEl("a", {
-      text: "\u{1F4D6} documentation",
+      text: "\u{1F4D6} Documentation",
       href: "https://github.com/username/nanobanana-pro-obsidian#readme"
     });
     linksDiv.createEl("span", { text: " | " });
     linksDiv.createEl("a", {
-      text: "\u{1F41B} report issue",
+      text: "\u{1F41B} Report issue",
       href: "https://github.com/username/nanobanana-pro-obsidian/issues"
     });
   }
@@ -921,7 +921,7 @@ var MESSAGES = {
   },
   en: {
     // Progress Modal
-    progressTitle: "\u{1F3A8} generating knowledge poster...",
+    progressTitle: "\u{1F3A8} Generating knowledge poster...",
     estimatedTime: "\u23F1\uFE0F estimated time: about 15-30 seconds",
     cancel: "Cancel",
     // Progress Steps
@@ -931,12 +931,12 @@ var MESSAGES = {
     stepSaving: "Saving file",
     stepEmbedding: "Embedding in note",
     // Success
-    successTitle: "\u2705 knowledge poster created!",
+    successTitle: "\u2705 Knowledge poster created!",
     successSaved: "\u{1F4C1} saved to",
     confirm: "OK",
     // Error
-    errorTitle: "\u274C generation failed",
-    errorSolutions: "\u{1F4A1} solutions:",
+    errorTitle: "\u274C Generation failed",
+    errorSolutions: "\u{1F4A1} Solutions:",
     retry: "Retry",
     close: "Close",
     // Error Suggestions
@@ -952,18 +952,18 @@ var MESSAGES = {
     suggestionContentMayBeSensitive: "The content may contain sensitive material",
     suggestionAddContent: "Please add content to your note",
     // Preview Modal
-    previewTitle: "\u{1F4DD} prompt preview",
+    previewTitle: "\u{1F4DD} Prompt preview",
     previewPromptLabel: "Generated prompt (editable):",
     previewCharacters: "characters",
-    previewTipsTitle: "\u{1F4A1} tips:",
+    previewTipsTitle: "\u{1F4A1} Tips:",
     previewTip1: "You can edit the prompt to adjust the desired style",
     previewTip2: "Adding specific colors, layouts, and elements will give better results",
     previewTip3: 'Use the "Regenerate" button to create a new prompt',
-    previewGenerate: "\u{1F3A8} generate image",
-    previewRegenerate: "\u{1F504} regenerate",
-    previewPromptModel: "\u{1F916} prompt model",
-    previewImageModel: "\u{1F5BC}\uFE0F image model",
-    previewStyle: "\u{1F4CA} style"
+    previewGenerate: "\u{1F3A8} Generate image",
+    previewRegenerate: "\u{1F504} Regenerate",
+    previewPromptModel: "\u{1F916} Prompt model",
+    previewImageModel: "\u{1F5BC}\uFE0F Image model",
+    previewStyle: "\u{1F4CA} Style"
   },
   ja: {
     // Progress Modal
@@ -1502,7 +1502,7 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
     contentEl.empty();
     contentEl.addClass("nanobanana-quick-options");
     contentEl.createEl("h2", {
-      text: "\u{1F3A8} quick options",
+      text: "\u{1F3A8} Quick options",
       cls: "nanobanana-modal-title"
     });
     contentEl.createEl("p", {
@@ -1511,12 +1511,12 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
     });
     new import_obsidian7.Setting(contentEl).setName("Image style").setDesc("Select the visual style for your knowledge poster").addDropdown(
       (dropdown) => dropdown.addOptions({
-        "infographic": "\u{1F4CA} infographic - charts & visual hierarchy",
-        "poster": "\u{1F3A8} poster - bold typography & imagery",
-        "diagram": "\u{1F4D0} diagram - technical connections",
-        "mindmap": "\u{1F9E0} mind map - central concept & branches",
-        "timeline": "\u{1F4C5} timeline - progression & milestones",
-        "cartoon": "\u{1F3AC} cartoon - comic strip panels"
+        "infographic": "\u{1F4CA} Infographic - charts & visual hierarchy",
+        "poster": "\u{1F3A8} Poster - bold typography & imagery",
+        "diagram": "\u{1F4D0} Diagram - technical connections",
+        "mindmap": "\u{1F9E0} Mind map - central concept & branches",
+        "timeline": "\u{1F4C5} Timeline - progression & milestones",
+        "cartoon": "\u{1F3AC} Cartoon - comic strip panels"
       }).setValue(this.selectedStyle).onChange((value) => {
         this.selectedStyle = value;
         this.updateCartoonSettings();
@@ -1549,7 +1549,7 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
       this.close();
     };
     const generateBtn = buttonContainer.createEl("button", {
-      text: "\u{1F680} Generate poster",
+      text: "\u{1F680} Generate",
       cls: "nanobanana-btn nanobanana-btn-primary"
     });
     generateBtn.onclick = () => {
