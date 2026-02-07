@@ -9,6 +9,23 @@ import {
 import { SYSTEM_PROMPT } from '../settingsData';
 
 export class PromptService {
+  private static readonly REQUEST_TIMEOUT_MS = 30000;
+
+  /**
+   * Wrap a promise with a timeout
+   */
+  private async withTimeout<T>(promise: Promise<T>, timeoutMs = PromptService.REQUEST_TIMEOUT_MS): Promise<T> {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error(`Request timed out after ${timeoutMs}ms`)), timeoutMs);
+    });
+    try {
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    }
+  }
+
   /**
    * Generate an image prompt from note content using the specified AI provider
    */
@@ -64,7 +81,7 @@ export class PromptService {
   }
 
   private async callOpenAI(model: string, apiKey: string, content: string): Promise<string> {
-    const response = await requestUrl({
+    const response = await this.withTimeout(requestUrl({
       url: 'https://api.openai.com/v1/chat/completions',
       method: 'POST',
       headers: {
@@ -80,20 +97,24 @@ export class PromptService {
         max_tokens: 1000,
         temperature: 0.7
       })
-    });
+    }));
 
     if (response.status !== 200) {
       throw this.handleHttpError(response.status, response.text, 'openai');
     }
 
     const data = response.json;
-    return data.choices[0]?.message?.content?.trim() || '';
+    const result = data.choices?.[0]?.message?.content?.trim() || '';
+    if (!result) {
+      throw this.createError('GENERATION_FAILED', 'OpenAI returned empty response');
+    }
+    return result;
   }
 
   private async callGoogle(model: string, apiKey: string, content: string): Promise<string> {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-    const response = await requestUrl({
+    const response = await this.withTimeout(requestUrl({
       url,
       method: 'POST',
       headers: {
@@ -121,7 +142,7 @@ export class PromptService {
           { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
         ]
       })
-    });
+    }));
 
     if (response.status !== 200) {
       throw this.handleHttpError(response.status, response.text, 'google');
@@ -148,7 +169,7 @@ export class PromptService {
   }
 
   private async callAnthropic(model: string, apiKey: string, content: string): Promise<string> {
-    const response = await requestUrl({
+    const response = await this.withTimeout(requestUrl({
       url: 'https://api.anthropic.com/v1/messages',
       method: 'POST',
       headers: {
@@ -164,7 +185,7 @@ export class PromptService {
           { role: 'user', content: `Create an image prompt for the following content:\n\n${content}` }
         ]
       })
-    });
+    }));
 
     if (response.status !== 200) {
       throw this.handleHttpError(response.status, response.text, 'anthropic');
@@ -181,7 +202,7 @@ export class PromptService {
     console.debug('[xAI Debug] System prompt length:', SYSTEM_PROMPT.length);
 
     try {
-      const response = await requestUrl({
+      const response = await this.withTimeout(requestUrl({
         url: 'https://api.x.ai/v1/chat/completions',
         method: 'POST',
         headers: {
@@ -196,7 +217,7 @@ export class PromptService {
           ],
           temperature: 0.7
         })
-      });
+      }));
 
       console.debug('[xAI Debug] Response status:', response.status);
 
@@ -207,7 +228,11 @@ export class PromptService {
 
       const data = response.json;
       console.debug('[xAI Debug] Success! Response received');
-      return data.choices[0]?.message?.content?.trim() || '';
+      const result = data.choices?.[0]?.message?.content?.trim() || '';
+      if (!result) {
+        throw this.createError('GENERATION_FAILED', 'xAI returned empty response');
+      }
+      return result;
     } catch (error) {
       // Log the FULL error before any processing
       console.error('[xAI Debug] FULL ERROR:', error);

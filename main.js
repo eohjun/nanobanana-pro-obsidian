@@ -29,6 +29,51 @@ __export(main_exports, {
 module.exports = __toCommonJS(main_exports);
 var import_obsidian8 = require("obsidian");
 
+// src/types.ts
+var GenerationErrorClass = class extends Error {
+  constructor(type, message, retryable = false, details) {
+    super(message);
+    this.name = "GenerationError";
+    this.type = type;
+    this.details = details;
+    this.retryable = retryable;
+  }
+};
+var PROVIDER_CONFIGS = {
+  openai: {
+    name: "OpenAI",
+    endpoint: "https://api.openai.com/v1/chat/completions",
+    defaultModel: "gpt-4o",
+    models: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"]
+  },
+  google: {
+    name: "Google Gemini",
+    endpoint: "https://generativelanguage.googleapis.com/v1beta/models",
+    defaultModel: "gemini-2.0-flash",
+    models: ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash"]
+  },
+  anthropic: {
+    name: "Anthropic",
+    endpoint: "https://api.anthropic.com/v1/messages",
+    defaultModel: "claude-sonnet-4-20250514",
+    models: ["claude-sonnet-4-20250514", "claude-3-5-sonnet-20241022", "claude-3-haiku-20240307"]
+  },
+  xai: {
+    name: "xAI",
+    endpoint: "https://api.x.ai/v1/chat/completions",
+    defaultModel: "grok-4-1-fast",
+    models: ["grok-4-1-fast", "grok-4-1-fast-reasoning", "grok-4-1-fast-non-reasoning", "grok-beta", "grok-2-latest"]
+  }
+};
+var IMAGE_STYLES = {
+  infographic: "Modern infographic with icons, charts, and visual hierarchy",
+  poster: "Bold poster design with strong typography and imagery",
+  diagram: "Technical diagram with clear connections and labels",
+  mindmap: "Mind map style with central concept and branches",
+  timeline: "Timeline format showing progression and milestones",
+  cartoon: "Comic strip style with sequential panels telling a visual story"
+};
+
 // src/settingsData.ts
 var DEFAULT_SETTINGS = {
   // API Keys
@@ -98,53 +143,6 @@ Design requirements:
 
 // src/settings.ts
 var import_obsidian = require("obsidian");
-
-// src/types.ts
-var GenerationErrorClass = class extends Error {
-  constructor(type, message, retryable = false, details) {
-    super(message);
-    this.name = "GenerationError";
-    this.type = type;
-    this.details = details;
-    this.retryable = retryable;
-  }
-};
-var PROVIDER_CONFIGS = {
-  openai: {
-    name: "OpenAI",
-    endpoint: "https://api.openai.com/v1/chat/completions",
-    defaultModel: "gpt-4o",
-    models: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"]
-  },
-  google: {
-    name: "Google Gemini",
-    endpoint: "https://generativelanguage.googleapis.com/v1beta/models",
-    defaultModel: "gemini-2.0-flash",
-    models: ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash"]
-  },
-  anthropic: {
-    name: "Anthropic",
-    endpoint: "https://api.anthropic.com/v1/messages",
-    defaultModel: "claude-sonnet-4-20250514",
-    models: ["claude-sonnet-4-20250514", "claude-3-5-sonnet-20241022", "claude-3-haiku-20240307"]
-  },
-  xai: {
-    name: "xAI",
-    endpoint: "https://api.x.ai/v1/chat/completions",
-    defaultModel: "grok-4-1-fast",
-    models: ["grok-4-1-fast", "grok-4-1-fast-reasoning", "grok-4-1-fast-non-reasoning", "grok-beta", "grok-2-latest"]
-  }
-};
-var IMAGE_STYLES = {
-  infographic: "Modern infographic with icons, charts, and visual hierarchy",
-  poster: "Bold poster design with strong typography and imagery",
-  diagram: "Technical diagram with clear connections and labels",
-  mindmap: "Mind map style with central concept and branches",
-  timeline: "Timeline format showing progression and milestones",
-  cartoon: "Comic strip style with sequential panels telling a visual story"
-};
-
-// src/settings.ts
 var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
@@ -338,7 +336,22 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
 
 // src/services/promptService.ts
 var import_obsidian2 = require("obsidian");
-var PromptService = class {
+var _PromptService = class {
+  /**
+   * Wrap a promise with a timeout
+   */
+  async withTimeout(promise, timeoutMs = _PromptService.REQUEST_TIMEOUT_MS) {
+    let timeoutId;
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error(`Request timed out after ${timeoutMs}ms`)), timeoutMs);
+    });
+    try {
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      if (timeoutId !== void 0)
+        clearTimeout(timeoutId);
+    }
+  }
   /**
    * Generate an image prompt from note content using the specified AI provider
    */
@@ -380,8 +393,8 @@ var PromptService = class {
     }
   }
   async callOpenAI(model, apiKey, content) {
-    var _a, _b, _c;
-    const response = await (0, import_obsidian2.requestUrl)({
+    var _a, _b, _c, _d;
+    const response = await this.withTimeout((0, import_obsidian2.requestUrl)({
       url: "https://api.openai.com/v1/chat/completions",
       method: "POST",
       headers: {
@@ -399,17 +412,21 @@ ${content}` }
         max_tokens: 1e3,
         temperature: 0.7
       })
-    });
+    }));
     if (response.status !== 200) {
       throw this.handleHttpError(response.status, response.text, "openai");
     }
     const data = response.json;
-    return ((_c = (_b = (_a = data.choices[0]) == null ? void 0 : _a.message) == null ? void 0 : _b.content) == null ? void 0 : _c.trim()) || "";
+    const result = ((_d = (_c = (_b = (_a = data.choices) == null ? void 0 : _a[0]) == null ? void 0 : _b.message) == null ? void 0 : _c.content) == null ? void 0 : _d.trim()) || "";
+    if (!result) {
+      throw this.createError("GENERATION_FAILED", "OpenAI returned empty response");
+    }
+    return result;
   }
   async callGoogle(model, apiKey, content) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    const response = await (0, import_obsidian2.requestUrl)({
+    const response = await this.withTimeout((0, import_obsidian2.requestUrl)({
       url,
       method: "POST",
       headers: {
@@ -439,7 +456,7 @@ ${content}`
           { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
         ]
       })
-    });
+    }));
     if (response.status !== 200) {
       throw this.handleHttpError(response.status, response.text, "google");
     }
@@ -457,7 +474,7 @@ ${content}`
   }
   async callAnthropic(model, apiKey, content) {
     var _a, _b, _c;
-    const response = await (0, import_obsidian2.requestUrl)({
+    const response = await this.withTimeout((0, import_obsidian2.requestUrl)({
       url: "https://api.anthropic.com/v1/messages",
       method: "POST",
       headers: {
@@ -475,7 +492,7 @@ ${content}`
 ${content}` }
         ]
       })
-    });
+    }));
     if (response.status !== 200) {
       throw this.handleHttpError(response.status, response.text, "anthropic");
     }
@@ -483,12 +500,12 @@ ${content}` }
     return ((_c = (_b = (_a = data.content) == null ? void 0 : _a[0]) == null ? void 0 : _b.text) == null ? void 0 : _c.trim()) || "";
   }
   async callXAI(model, apiKey, content) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     console.debug("[xAI Debug] Model:", model);
     console.debug("[xAI Debug] Content length:", content.length);
     console.debug("[xAI Debug] System prompt length:", SYSTEM_PROMPT.length);
     try {
-      const response = await (0, import_obsidian2.requestUrl)({
+      const response = await this.withTimeout((0, import_obsidian2.requestUrl)({
         url: "https://api.x.ai/v1/chat/completions",
         method: "POST",
         headers: {
@@ -505,7 +522,7 @@ ${content}` }
           ],
           temperature: 0.7
         })
-      });
+      }));
       console.debug("[xAI Debug] Response status:", response.status);
       if (response.status !== 200) {
         console.error("[xAI Debug] Error response:", response.text);
@@ -513,7 +530,11 @@ ${content}` }
       }
       const data = response.json;
       console.debug("[xAI Debug] Success! Response received");
-      return ((_c = (_b = (_a = data.choices[0]) == null ? void 0 : _a.message) == null ? void 0 : _b.content) == null ? void 0 : _c.trim()) || "";
+      const result = ((_d = (_c = (_b = (_a = data.choices) == null ? void 0 : _a[0]) == null ? void 0 : _b.message) == null ? void 0 : _c.content) == null ? void 0 : _d.trim()) || "";
+      if (!result) {
+        throw this.createError("GENERATION_FAILED", "xAI returned empty response");
+      }
+      return result;
     } catch (error) {
       console.error("[xAI Debug] FULL ERROR:", error);
       console.error("[xAI Debug] Error type:", typeof error);
@@ -552,10 +573,27 @@ ${content}` }
     return new GenerationErrorClass(type, message, retryable);
   }
 };
+var PromptService = _PromptService;
+PromptService.REQUEST_TIMEOUT_MS = 3e4;
 
 // src/services/imageService.ts
 var import_obsidian3 = require("obsidian");
-var ImageService = class {
+var _ImageService = class {
+  /**
+   * Wrap a promise with a timeout
+   */
+  async withTimeout(promise, timeoutMs = _ImageService.REQUEST_TIMEOUT_MS) {
+    let timeoutId;
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error(`Request timed out after ${timeoutMs}ms`)), timeoutMs);
+    });
+    try {
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      if (timeoutId !== void 0)
+        clearTimeout(timeoutId);
+    }
+  }
   /**
    * Generate an infographic image using Google Gemini
    */
@@ -582,7 +620,7 @@ var ImageService = class {
       }
       const fullPrompt = IMAGE_GENERATION_PROMPT_TEMPLATE.replace("{style}", styleDescription).replace("{prompt}", prompt) + "\n\n" + languageInstructions[preferredLanguage];
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      const response = await (0, import_obsidian3.requestUrl)({
+      const response = await this.withTimeout((0, import_obsidian3.requestUrl)({
         url,
         method: "POST",
         headers: {
@@ -607,7 +645,7 @@ var ImageService = class {
             { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
           ]
         })
-      });
+      }));
       if (response.status !== 200) {
         throw this.handleHttpError(response.status, response.text);
       }
@@ -717,6 +755,8 @@ The overall style should be:
 - Easy to follow visual storytelling`;
   }
 };
+var ImageService = _ImageService;
+ImageService.REQUEST_TIMEOUT_MS = 6e4;
 
 // src/services/fileService.ts
 var import_obsidian4 = require("obsidian");
@@ -1617,13 +1657,13 @@ var NanoBananaPlugin = class extends import_obsidian8.Plugin {
       new import_obsidian8.Notice("Note is empty. Please add some content first.");
       return;
     }
-    if (!this.settings.googleApiKey) {
-      new import_obsidian8.Notice("Google API key is required for image generation. Please configure it in settings.");
-      return;
-    }
     const providerKey = this.getProviderApiKey();
     if (!providerKey) {
       new import_obsidian8.Notice(`${this.settings.selectedProvider} API key is not configured. Please check settings.`);
+      return;
+    }
+    if (!this.settings.googleApiKey) {
+      new import_obsidian8.Notice("Google API key is required for image generation. Please configure it in settings.");
       return;
     }
     const quickOptions = await this.showQuickOptionsModal();
@@ -1637,95 +1677,99 @@ var NanoBananaPlugin = class extends import_obsidian8.Plugin {
     this.lastNoteFile = noteFile;
     let progressModal = null;
     try {
-      if (this.settings.showProgressModal) {
-        progressModal = new ProgressModal(this.app, this.settings.preferredLanguage);
-        progressModal.open();
-      }
-      this.updateProgress(progressModal, {
-        step: "generating-prompt",
-        progress: 20,
-        message: "\uD504\uB86C\uD504\uD2B8 \uC0DD\uC131 \uC911..."
-      });
-      const promptResult = await this.executeWithRetry(async () => {
-        return await this.promptService.generatePrompt(
-          noteContent,
-          this.settings.selectedProvider,
-          this.settings.promptModel,
-          providerKey
-        );
-      });
-      let finalPrompt = promptResult.prompt;
-      this.lastPrompt = finalPrompt;
-      if (this.settings.customPromptPrefix) {
-        finalPrompt = `${this.settings.customPromptPrefix}
-
-${finalPrompt}`;
-      }
-      if (this.settings.showPreviewBeforeGeneration) {
-        if (progressModal) {
-          progressModal.close();
-          progressModal = null;
-        }
-        const previewResult = await this.showPreviewModal(finalPrompt);
-        if (!previewResult.confirmed) {
-          this.isGenerating = false;
-          return;
-        }
-        if (previewResult.regenerate) {
-          this.isGenerating = false;
-          return this.generatePoster();
-        }
-        finalPrompt = previewResult.prompt;
+      let shouldRegenerate = true;
+      while (shouldRegenerate) {
+        shouldRegenerate = false;
         if (this.settings.showProgressModal) {
           progressModal = new ProgressModal(this.app, this.settings.preferredLanguage);
           progressModal.open();
         }
-      }
-      this.updateProgress(progressModal, {
-        step: "generating-image",
-        progress: 50,
-        message: "\uC774\uBBF8\uC9C0 \uC0DD\uC131 \uC911..."
-      });
-      const imageResult = await this.executeWithRetry(async () => {
-        return await this.imageService.generateImage(
-          finalPrompt,
-          this.settings.googleApiKey,
-          this.settings.imageModel,
-          selectedStyle,
-          this.settings.preferredLanguage,
-          selectedSize,
-          selectedCartoonCuts
+        this.updateProgress(progressModal, {
+          step: "generating-prompt",
+          progress: 20,
+          message: this.getProgressMessage("generating-prompt")
+        });
+        const promptResult = await this.executeWithRetry(async () => {
+          return await this.promptService.generatePrompt(
+            noteContent,
+            this.settings.selectedProvider,
+            this.settings.promptModel,
+            providerKey
+          );
+        });
+        let finalPrompt = promptResult.prompt;
+        this.lastPrompt = finalPrompt;
+        if (this.settings.customPromptPrefix) {
+          finalPrompt = `${this.settings.customPromptPrefix}
+
+${finalPrompt}`;
+        }
+        if (this.settings.showPreviewBeforeGeneration) {
+          if (progressModal) {
+            progressModal.close();
+            progressModal = null;
+          }
+          const previewResult = await this.showPreviewModal(finalPrompt);
+          if (!previewResult.confirmed) {
+            this.isGenerating = false;
+            return;
+          }
+          if (previewResult.regenerate) {
+            shouldRegenerate = true;
+            continue;
+          }
+          finalPrompt = previewResult.prompt;
+          if (this.settings.showProgressModal) {
+            progressModal = new ProgressModal(this.app, this.settings.preferredLanguage);
+            progressModal.open();
+          }
+        }
+        this.updateProgress(progressModal, {
+          step: "generating-image",
+          progress: 50,
+          message: this.getProgressMessage("generating-image")
+        });
+        const imageResult = await this.executeWithRetry(async () => {
+          return await this.imageService.generateImage(
+            finalPrompt,
+            this.settings.googleApiKey,
+            this.settings.imageModel,
+            selectedStyle,
+            this.settings.preferredLanguage,
+            selectedSize,
+            selectedCartoonCuts
+          );
+        });
+        this.updateProgress(progressModal, {
+          step: "saving",
+          progress: 80,
+          message: this.getProgressMessage("saving")
+        });
+        const imagePath = await this.fileService.saveImage(
+          imageResult.imageData,
+          imageResult.mimeType,
+          noteFile,
+          this.settings.attachmentFolder
         );
-      });
-      this.updateProgress(progressModal, {
-        step: "saving",
-        progress: 80,
-        message: "\uD30C\uC77C \uC800\uC7A5 \uC911..."
-      });
-      const imagePath = await this.fileService.saveImage(
-        imageResult.imageData,
-        imageResult.mimeType,
-        noteFile,
-        this.settings.attachmentFolder
-      );
-      this.updateProgress(progressModal, {
-        step: "embedding",
-        progress: 95,
-        message: "\uB178\uD2B8\uC5D0 \uC0BD\uC785 \uC911..."
-      });
-      await this.fileService.embedImageInNote(noteFile, imagePath);
-      this.updateProgress(progressModal, {
-        step: "complete",
-        progress: 100,
-        message: "\uC644\uB8CC!"
-      });
-      if (progressModal) {
-        progressModal.showSuccess(imagePath);
-      } else {
-        new import_obsidian8.Notice("\u2705 knowledge poster generated successfully!");
+        this.updateProgress(progressModal, {
+          step: "embedding",
+          progress: 95,
+          message: this.getProgressMessage("embedding")
+        });
+        await this.fileService.embedImageInNote(noteFile, imagePath);
+        this.updateProgress(progressModal, {
+          step: "complete",
+          progress: 100,
+          message: this.getProgressMessage("complete")
+        });
+        if (progressModal) {
+          progressModal.showSuccess(imagePath);
+        } else {
+          new import_obsidian8.Notice("\u2705 knowledge poster generated successfully!");
+        }
       }
     } catch (error) {
-      const genError = error;
+      const genError = this.toGenerationError(error);
       if (progressModal) {
         progressModal.showError(genError);
       } else {
@@ -1773,7 +1817,7 @@ ${finalPrompt}`;
       this.lastPrompt = result.prompt;
       new import_obsidian8.Notice("\u2705 prompt copied to clipboard!");
     } catch (error) {
-      const genError = error;
+      const genError = this.toGenerationError(error);
       new import_obsidian8.Notice(`\u274C failed: ${genError.message}`);
     }
   }
@@ -1808,7 +1852,7 @@ ${finalPrompt}`;
       this.updateProgress(progressModal, {
         step: "generating-image",
         progress: 40,
-        message: "\uC774\uBBF8\uC9C0 \uC0DD\uC131 \uC911..."
+        message: this.getProgressMessage("generating-image")
       });
       const imageResult = await this.executeWithRetry(async () => {
         return await this.imageService.generateImage(
@@ -1824,7 +1868,7 @@ ${finalPrompt}`;
       this.updateProgress(progressModal, {
         step: "saving",
         progress: 80,
-        message: "\uD30C\uC77C \uC800\uC7A5 \uC911..."
+        message: this.getProgressMessage("saving")
       });
       const imagePath = await this.fileService.saveImage(
         imageResult.imageData,
@@ -1835,7 +1879,7 @@ ${finalPrompt}`;
       this.updateProgress(progressModal, {
         step: "embedding",
         progress: 95,
-        message: "\uB178\uD2B8\uC5D0 \uC0BD\uC785 \uC911..."
+        message: this.getProgressMessage("embedding")
       });
       await this.fileService.embedImageInNote(this.lastNoteFile, imagePath);
       if (progressModal) {
@@ -1844,7 +1888,7 @@ ${finalPrompt}`;
         new import_obsidian8.Notice("\u2705 poster regenerated successfully!");
       }
     } catch (error) {
-      const genError = error;
+      const genError = this.toGenerationError(error);
       if (progressModal) {
         progressModal.showError(genError);
       } else {
@@ -1903,15 +1947,16 @@ ${finalPrompt}`;
       try {
         return await operation();
       } catch (error) {
-        lastError = error;
-        if (!lastError.retryable || attempt === this.settings.autoRetryCount) {
-          throw lastError instanceof Error ? lastError : new Error((lastError == null ? void 0 : lastError.message) || "Unknown error");
+        lastError = error instanceof Error ? error : new Error(String(error));
+        const retryable = error instanceof GenerationErrorClass && error.retryable;
+        if (!retryable || attempt === this.settings.autoRetryCount) {
+          throw lastError;
         }
         const delay = Math.pow(2, attempt) * 1e3;
         await this.sleep(delay);
       }
     }
-    throw lastError instanceof Error ? lastError : new Error("Operation failed with no error details");
+    throw lastError != null ? lastError : new Error("Operation failed with no error details");
   }
   /**
    * Update progress modal
@@ -1937,6 +1982,71 @@ ${finalPrompt}`;
       default:
         return "";
     }
+  }
+  /**
+   * Convert unknown error to GenerationError interface
+   */
+  toGenerationError(error) {
+    if (error instanceof GenerationErrorClass) {
+      return { type: error.type, message: error.message, retryable: error.retryable, details: error.details };
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    return { type: "GENERATION_FAILED", message, retryable: false };
+  }
+  /**
+   * Get localized progress message based on preferredLanguage setting
+   */
+  getProgressMessage(step) {
+    var _a, _b, _c, _d;
+    const messages = {
+      "generating-prompt": {
+        ko: "\uD504\uB86C\uD504\uD2B8 \uC0DD\uC131 \uC911...",
+        en: "Generating prompt...",
+        ja: "\u30D7\u30ED\u30F3\u30D7\u30C8\u3092\u751F\u6210\u4E2D...",
+        zh: "\u6B63\u5728\u751F\u6210\u63D0\u793A...",
+        es: "Generando prompt...",
+        fr: "G\xE9n\xE9ration du prompt...",
+        de: "Prompt wird generiert..."
+      },
+      "generating-image": {
+        ko: "\uC774\uBBF8\uC9C0 \uC0DD\uC131 \uC911...",
+        en: "Generating image...",
+        ja: "\u753B\u50CF\u3092\u751F\u6210\u4E2D...",
+        zh: "\u6B63\u5728\u751F\u6210\u56FE\u50CF...",
+        es: "Generando imagen...",
+        fr: "G\xE9n\xE9ration de l'image...",
+        de: "Bild wird generiert..."
+      },
+      "saving": {
+        ko: "\uD30C\uC77C \uC800\uC7A5 \uC911...",
+        en: "Saving file...",
+        ja: "\u30D5\u30A1\u30A4\u30EB\u3092\u4FDD\u5B58\u4E2D...",
+        zh: "\u6B63\u5728\u4FDD\u5B58\u6587\u4EF6...",
+        es: "Guardando archivo...",
+        fr: "Sauvegarde du fichier...",
+        de: "Datei wird gespeichert..."
+      },
+      "embedding": {
+        ko: "\uB178\uD2B8\uC5D0 \uC0BD\uC785 \uC911...",
+        en: "Embedding in note...",
+        ja: "\u30CE\u30FC\u30C8\u306B\u633F\u5165\u4E2D...",
+        zh: "\u6B63\u5728\u5D4C\u5165\u7B14\u8BB0...",
+        es: "Insertando en nota...",
+        fr: "Insertion dans la note...",
+        de: "In Notiz einbetten..."
+      },
+      "complete": {
+        ko: "\uC644\uB8CC!",
+        en: "Complete!",
+        ja: "\u5B8C\u4E86\uFF01",
+        zh: "\u5B8C\u6210\uFF01",
+        es: "\xA1Completado!",
+        fr: "Termin\xE9 !",
+        de: "Fertig!"
+      }
+    };
+    const lang = this.settings.preferredLanguage || "en";
+    return (_d = (_c = (_a = messages[step]) == null ? void 0 : _a[lang]) != null ? _c : (_b = messages[step]) == null ? void 0 : _b["en"]) != null ? _d : step;
   }
   /**
    * Sleep utility

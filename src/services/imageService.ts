@@ -3,6 +3,23 @@ import { ImageGenerationResult, GenerationError, GenerationErrorClass, ImageStyl
 import { IMAGE_GENERATION_PROMPT_TEMPLATE } from '../settingsData';
 
 export class ImageService {
+  private static readonly REQUEST_TIMEOUT_MS = 60000;
+
+  /**
+   * Wrap a promise with a timeout
+   */
+  private async withTimeout<T>(promise: Promise<T>, timeoutMs = ImageService.REQUEST_TIMEOUT_MS): Promise<T> {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error(`Request timed out after ${timeoutMs}ms`)), timeoutMs);
+    });
+    try {
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    }
+  }
+
   /**
    * Generate an infographic image using Google Gemini
    */
@@ -48,7 +65,7 @@ export class ImageService {
 
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-      const response = await requestUrl({
+      const response = await this.withTimeout(requestUrl({
         url,
         method: 'POST',
         headers: {
@@ -73,7 +90,7 @@ export class ImageService {
             { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
           ]
         })
-      });
+      }));
 
       if (response.status !== 200) {
         throw this.handleHttpError(response.status, response.text);

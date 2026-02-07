@@ -1,5 +1,5 @@
 import { Plugin, MarkdownView, Notice, TFile } from 'obsidian';
-import { NanoBananaSettings, GenerationError, ProgressState, ImageStyle, ImageSize, CartoonCuts } from './types';
+import { NanoBananaSettings, GenerationError, GenerationErrorClass, ProgressState, CartoonCuts } from './types';
 import { DEFAULT_SETTINGS } from './settingsData';
 import { NanoBananaSettingTab } from './settings';
 import { PromptService } from './services/promptService';
@@ -86,16 +86,16 @@ export default class NanoBananaPlugin extends Plugin {
       return;
     }
 
-    // Check for required API key
-    if (!this.settings.googleApiKey) {
-      new Notice('Google API key is required for image generation. Please configure it in settings.');
-      return;
-    }
-
-    // Get API key for selected provider
+    // Get API key for selected provider (needed for prompt generation)
     const providerKey = this.getProviderApiKey();
     if (!providerKey) {
       new Notice(`${this.settings.selectedProvider} API key is not configured. Please check settings.`);
+      return;
+    }
+
+    // Google API key is only required for image generation
+    if (!this.settings.googleApiKey) {
+      new Notice('Google API key is required for image generation. Please configure it in settings.');
       return;
     }
 
@@ -116,121 +116,127 @@ export default class NanoBananaPlugin extends Plugin {
     let progressModal: ProgressModal | null = null;
 
     try {
-      // Show progress modal if enabled
-      if (this.settings.showProgressModal) {
-        progressModal = new ProgressModal(this.app, this.settings.preferredLanguage);
-        progressModal.open();
-      }
+      // Loop to support regeneration without recursion
+      let shouldRegenerate = true;
+      while (shouldRegenerate) {
+        shouldRegenerate = false;
 
-      // Step 1: Generate prompt
-      this.updateProgress(progressModal, {
-        step: 'generating-prompt',
-        progress: 20,
-        message: '프롬프트 생성 중...'
-      });
-
-      const promptResult = await this.executeWithRetry(async () => {
-        return await this.promptService.generatePrompt(
-          noteContent,
-          this.settings.selectedProvider,
-          this.settings.promptModel,
-          providerKey
-        );
-      });
-
-      let finalPrompt = promptResult.prompt;
-      this.lastPrompt = finalPrompt;
-
-      // Add custom prefix if configured
-      if (this.settings.customPromptPrefix) {
-        finalPrompt = `${this.settings.customPromptPrefix}\n\n${finalPrompt}`;
-      }
-
-      // Step 2: Preview (if enabled)
-      if (this.settings.showPreviewBeforeGeneration) {
-        if (progressModal) {
-          progressModal.close();
-          progressModal = null;
-        }
-
-        const previewResult = await this.showPreviewModal(finalPrompt);
-
-        if (!previewResult.confirmed) {
-          this.isGenerating = false;
-          return;
-        }
-
-        if (previewResult.regenerate) {
-          this.isGenerating = false;
-          return this.generatePoster(); // Recursive call to regenerate
-        }
-
-        finalPrompt = previewResult.prompt;
-
-        // Reopen progress modal for image generation
+        // Show progress modal if enabled
         if (this.settings.showProgressModal) {
           progressModal = new ProgressModal(this.app, this.settings.preferredLanguage);
           progressModal.open();
         }
-      }
 
-      // Step 3: Generate image with selected options
-      this.updateProgress(progressModal, {
-        step: 'generating-image',
-        progress: 50,
-        message: '이미지 생성 중...'
-      });
+        // Step 1: Generate prompt
+        this.updateProgress(progressModal, {
+          step: 'generating-prompt',
+          progress: 20,
+          message: this.getProgressMessage('generating-prompt')
+        });
 
-      const imageResult = await this.executeWithRetry(async () => {
-        return await this.imageService.generateImage(
-          finalPrompt,
-          this.settings.googleApiKey,
-          this.settings.imageModel,
-          selectedStyle,
-          this.settings.preferredLanguage,
-          selectedSize,
-          selectedCartoonCuts
+        const promptResult = await this.executeWithRetry(async () => {
+          return await this.promptService.generatePrompt(
+            noteContent,
+            this.settings.selectedProvider,
+            this.settings.promptModel,
+            providerKey
+          );
+        });
+
+        let finalPrompt = promptResult.prompt;
+        this.lastPrompt = finalPrompt;
+
+        // Add custom prefix if configured
+        if (this.settings.customPromptPrefix) {
+          finalPrompt = `${this.settings.customPromptPrefix}\n\n${finalPrompt}`;
+        }
+
+        // Step 2: Preview (if enabled)
+        if (this.settings.showPreviewBeforeGeneration) {
+          if (progressModal) {
+            progressModal.close();
+            progressModal = null;
+          }
+
+          const previewResult = await this.showPreviewModal(finalPrompt);
+
+          if (!previewResult.confirmed) {
+            this.isGenerating = false;
+            return;
+          }
+
+          if (previewResult.regenerate) {
+            shouldRegenerate = true;
+            continue; // Re-run the loop instead of recursive call
+          }
+
+          finalPrompt = previewResult.prompt;
+
+          // Reopen progress modal for image generation
+          if (this.settings.showProgressModal) {
+            progressModal = new ProgressModal(this.app, this.settings.preferredLanguage);
+            progressModal.open();
+          }
+        }
+
+        // Step 3: Generate image with selected options
+        this.updateProgress(progressModal, {
+          step: 'generating-image',
+          progress: 50,
+          message: this.getProgressMessage('generating-image')
+        });
+
+        const imageResult = await this.executeWithRetry(async () => {
+          return await this.imageService.generateImage(
+            finalPrompt,
+            this.settings.googleApiKey,
+            this.settings.imageModel,
+            selectedStyle,
+            this.settings.preferredLanguage,
+            selectedSize,
+            selectedCartoonCuts
+          );
+        });
+
+        // Step 4: Save image
+        this.updateProgress(progressModal, {
+          step: 'saving',
+          progress: 80,
+          message: this.getProgressMessage('saving')
+        });
+
+        const imagePath = await this.fileService.saveImage(
+          imageResult.imageData,
+          imageResult.mimeType,
+          noteFile,
+          this.settings.attachmentFolder
         );
-      });
 
-      // Step 4: Save image
-      this.updateProgress(progressModal, {
-        step: 'saving',
-        progress: 80,
-        message: '파일 저장 중...'
-      });
+        // Step 5: Embed in note
+        this.updateProgress(progressModal, {
+          step: 'embedding',
+          progress: 95,
+          message: this.getProgressMessage('embedding')
+        });
 
-      const imagePath = await this.fileService.saveImage(
-        imageResult.imageData,
-        imageResult.mimeType,
-        noteFile,
-        this.settings.attachmentFolder
-      );
+        await this.fileService.embedImageInNote(noteFile, imagePath);
 
-      // Step 5: Embed in note
-      this.updateProgress(progressModal, {
-        step: 'embedding',
-        progress: 95,
-        message: '노트에 삽입 중...'
-      });
+        // Success
+        this.updateProgress(progressModal, {
+          step: 'complete',
+          progress: 100,
+          message: this.getProgressMessage('complete')
+        });
 
-      await this.fileService.embedImageInNote(noteFile, imagePath);
-
-      // Success
-      this.updateProgress(progressModal, {
-        step: 'complete',
-        progress: 100,
-        message: '완료!'
-      });
-
-      if (progressModal) {
-        progressModal.showSuccess(imagePath);
-      } else {
-        new Notice('✅ knowledge poster generated successfully!');
+        if (progressModal) {
+          progressModal.showSuccess(imagePath);
+        } else {
+          new Notice('✅ knowledge poster generated successfully!');
+        }
       }
 
     } catch (error) {
-      const genError = error as GenerationError;
+      const genError = this.toGenerationError(error);
 
       if (progressModal) {
         progressModal.showError(genError);
@@ -289,7 +295,7 @@ export default class NanoBananaPlugin extends Plugin {
 
       new Notice('✅ prompt copied to clipboard!');
     } catch (error) {
-      const genError = error as GenerationError;
+      const genError = this.toGenerationError(error);
       new Notice(`❌ failed: ${genError.message}`);
     }
   }
@@ -334,7 +340,7 @@ export default class NanoBananaPlugin extends Plugin {
       this.updateProgress(progressModal, {
         step: 'generating-image',
         progress: 40,
-        message: '이미지 생성 중...'
+        message: this.getProgressMessage('generating-image')
       });
 
       const imageResult = await this.executeWithRetry(async () => {
@@ -352,7 +358,7 @@ export default class NanoBananaPlugin extends Plugin {
       this.updateProgress(progressModal, {
         step: 'saving',
         progress: 80,
-        message: '파일 저장 중...'
+        message: this.getProgressMessage('saving')
       });
 
       const imagePath = await this.fileService.saveImage(
@@ -365,7 +371,7 @@ export default class NanoBananaPlugin extends Plugin {
       this.updateProgress(progressModal, {
         step: 'embedding',
         progress: 95,
-        message: '노트에 삽입 중...'
+        message: this.getProgressMessage('embedding')
       });
 
       await this.fileService.embedImageInNote(this.lastNoteFile, imagePath);
@@ -377,7 +383,7 @@ export default class NanoBananaPlugin extends Plugin {
       }
 
     } catch (error) {
-      const genError = error as GenerationError;
+      const genError = this.toGenerationError(error);
       if (progressModal) {
         progressModal.showError(genError);
       } else {
@@ -437,16 +443,17 @@ export default class NanoBananaPlugin extends Plugin {
   private async executeWithRetry<T>(
     operation: () => Promise<T>
   ): Promise<T> {
-    let lastError: GenerationError | null = null;
+    let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= this.settings.autoRetryCount; attempt++) {
       try {
         return await operation();
       } catch (error) {
-        lastError = error as GenerationError;
+        lastError = error instanceof Error ? error : new Error(String(error));
 
-        if (!lastError.retryable || attempt === this.settings.autoRetryCount) {
-          throw lastError instanceof Error ? lastError : new Error(lastError?.message || 'Unknown error');
+        const retryable = error instanceof GenerationErrorClass && error.retryable;
+        if (!retryable || attempt === this.settings.autoRetryCount) {
+          throw lastError;
         }
 
         // Exponential backoff
@@ -455,7 +462,7 @@ export default class NanoBananaPlugin extends Plugin {
       }
     }
 
-    throw lastError instanceof Error ? lastError : new Error('Operation failed with no error details');
+    throw lastError ?? new Error('Operation failed with no error details');
   }
 
   /**
@@ -483,6 +490,73 @@ export default class NanoBananaPlugin extends Plugin {
       default:
         return '';
     }
+  }
+
+  /**
+   * Convert unknown error to GenerationError interface
+   */
+  private toGenerationError(error: unknown): GenerationError {
+    if (error instanceof GenerationErrorClass) {
+      return { type: error.type, message: error.message, retryable: error.retryable, details: error.details };
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    return { type: 'GENERATION_FAILED', message, retryable: false };
+  }
+
+  /**
+   * Get localized progress message based on preferredLanguage setting
+   */
+  private getProgressMessage(step: string): string {
+    const messages: Record<string, Record<string, string>> = {
+      'generating-prompt': {
+        ko: '프롬프트 생성 중...',
+        en: 'Generating prompt...',
+        ja: 'プロンプトを生成中...',
+        zh: '正在生成提示...',
+        es: 'Generando prompt...',
+        fr: 'Génération du prompt...',
+        de: 'Prompt wird generiert...'
+      },
+      'generating-image': {
+        ko: '이미지 생성 중...',
+        en: 'Generating image...',
+        ja: '画像を生成中...',
+        zh: '正在生成图像...',
+        es: 'Generando imagen...',
+        fr: 'Génération de l\'image...',
+        de: 'Bild wird generiert...'
+      },
+      'saving': {
+        ko: '파일 저장 중...',
+        en: 'Saving file...',
+        ja: 'ファイルを保存中...',
+        zh: '正在保存文件...',
+        es: 'Guardando archivo...',
+        fr: 'Sauvegarde du fichier...',
+        de: 'Datei wird gespeichert...'
+      },
+      'embedding': {
+        ko: '노트에 삽입 중...',
+        en: 'Embedding in note...',
+        ja: 'ノートに挿入中...',
+        zh: '正在嵌入笔记...',
+        es: 'Insertando en nota...',
+        fr: 'Insertion dans la note...',
+        de: 'In Notiz einbetten...'
+      },
+      'complete': {
+        ko: '완료!',
+        en: 'Complete!',
+        ja: '完了！',
+        zh: '完成！',
+        es: '¡Completado!',
+        fr: 'Terminé !',
+        de: 'Fertig!'
+      }
+    };
+
+    const lang = this.settings.preferredLanguage || 'en';
+    return messages[step]?.[lang] ?? messages[step]?.['en'] ?? step;
   }
 
   /**
