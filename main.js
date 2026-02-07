@@ -336,7 +336,7 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
 
 // src/services/promptService.ts
 var import_obsidian2 = require("obsidian");
-var _PromptService = class {
+var _PromptService = class _PromptService {
   /**
    * Wrap a promise with a timeout
    */
@@ -348,8 +348,7 @@ var _PromptService = class {
     try {
       return await Promise.race([promise, timeoutPromise]);
     } finally {
-      if (timeoutId !== void 0)
-        clearTimeout(timeoutId);
+      if (timeoutId !== void 0) clearTimeout(timeoutId);
     }
   }
   /**
@@ -573,12 +572,12 @@ ${content}` }
     return new GenerationErrorClass(type, message, retryable);
   }
 };
+_PromptService.REQUEST_TIMEOUT_MS = 3e4;
 var PromptService = _PromptService;
-PromptService.REQUEST_TIMEOUT_MS = 3e4;
 
 // src/services/imageService.ts
 var import_obsidian3 = require("obsidian");
-var _ImageService = class {
+var _ImageService = class _ImageService {
   /**
    * Wrap a promise with a timeout
    */
@@ -590,8 +589,7 @@ var _ImageService = class {
     try {
       return await Promise.race([promise, timeoutPromise]);
     } finally {
-      if (timeoutId !== void 0)
-        clearTimeout(timeoutId);
+      if (timeoutId !== void 0) clearTimeout(timeoutId);
     }
   }
   /**
@@ -755,8 +753,8 @@ The overall style should be:
 - Easy to follow visual storytelling`;
   }
 };
+_ImageService.REQUEST_TIMEOUT_MS = 6e4;
 var ImageService = _ImageService;
-ImageService.REQUEST_TIMEOUT_MS = 6e4;
 
 // src/services/fileService.ts
 var import_obsidian4 = require("obsidian");
@@ -1258,16 +1256,14 @@ var ProgressModal = class extends import_obsidian5.Modal {
     }
   }
   updateProgress(state) {
-    if (this.isCancelled)
-      return;
+    if (this.isCancelled) return;
     this.progressBar.style.width = `${state.progress}%`;
     this.progressText.setText(`${Math.round(state.progress)}%`);
     const stepIndex = this.steps.findIndex((s) => s.key === state.step);
     const stepElements = this.stepsContainer.querySelectorAll(".nanobanana-step");
     stepElements.forEach((el, index) => {
       const iconEl = el.querySelector(".nanobanana-step-icon");
-      if (!iconEl)
-        return;
+      if (!iconEl) return;
       if (index < stepIndex) {
         el.addClass("completed");
         el.removeClass("active");
@@ -1564,8 +1560,7 @@ var QuickOptionsModal = class extends import_obsidian7.Modal {
     };
   }
   updateCartoonSettings() {
-    if (!this.cartoonSettingsContainer)
-      return;
+    if (!this.cartoonSettingsContainer) return;
     this.cartoonSettingsContainer.empty();
     if (this.selectedStyle !== "cartoon") {
       this.cartoonSettingsContainer.addClass("nanobanana-hidden");
