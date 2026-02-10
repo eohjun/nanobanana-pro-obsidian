@@ -49,8 +49,8 @@ var PROVIDER_CONFIGS = {
   google: {
     name: "Google Gemini",
     endpoint: "https://generativelanguage.googleapis.com/v1beta/models",
-    defaultModel: "gemini-2.0-flash",
-    models: ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash"]
+    defaultModel: "gemini-2.5-flash",
+    models: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash"]
   },
   anthropic: {
     name: "Anthropic",
@@ -83,7 +83,7 @@ var DEFAULT_SETTINGS = {
   xaiApiKey: "",
   // Prompt Generation
   selectedProvider: "google",
-  promptModel: "gemini-2.0-flash",
+  promptModel: "gemini-2.5-flash",
   // Image Generation
   imageModel: "gemini-3-pro-image-preview",
   imageStyle: "infographic",
@@ -565,7 +565,7 @@ ${content}`
           }],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 1e3
+            maxOutputTokens: 8192
           },
           safetySettings: [
             { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },

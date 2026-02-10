@@ -9,7 +9,7 @@ export const DEFAULT_SETTINGS: NanoBananaSettings = {
 
   // Prompt Generation
   selectedProvider: 'google',
-  promptModel: 'gemini-2.0-flash',
+  promptModel: 'gemini-2.5-flash',
 
   // Image Generation
   imageModel: 'gemini-3-pro-image-preview',
