@@ -161,6 +161,30 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
       (button) => button.setIcon("external-link").setTooltip("Get API key").onClick(() => {
         window.open("https://aistudio.google.com/apikey");
       })
+    ).addExtraButton(
+      (button) => button.setIcon("checkmark").setTooltip("Test API key").onClick(async () => {
+        if (!this.plugin.settings.googleApiKey) {
+          new import_obsidian.Notice("Please enter an API key first");
+          return;
+        }
+        new import_obsidian.Notice("Testing API key...");
+        try {
+          const response = await (0, import_obsidian.requestUrl)({
+            url: `https://generativelanguage.googleapis.com/v1beta/models?key=${this.plugin.settings.googleApiKey}`,
+            method: "GET"
+          });
+          if (response.status === 200) {
+            new import_obsidian.Notice("Google API key is valid!");
+          }
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          if (msg.includes("400") || msg.includes("403") || msg.includes("401")) {
+            new import_obsidian.Notice("Invalid API key. Please check and try again.");
+          } else {
+            new import_obsidian.Notice(`Connection error: ${msg}`);
+          }
+        }
+      })
     );
     new import_obsidian.Setting(containerEl).setName("OpenAI API key").setDesc("Optional. Used for prompt generation if OpenAI is selected.").addText(
       (text) => text.setPlaceholder("Enter your OpenAI API key").setValue(this.plugin.settings.openaiApiKey).onChange(async (value) => {
@@ -170,6 +194,31 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
     ).addExtraButton(
       (button) => button.setIcon("external-link").setTooltip("Get API key").onClick(() => {
         window.open("https://platform.openai.com/api-keys");
+      })
+    ).addExtraButton(
+      (button) => button.setIcon("checkmark").setTooltip("Test API key").onClick(async () => {
+        if (!this.plugin.settings.openaiApiKey) {
+          new import_obsidian.Notice("Please enter an API key first");
+          return;
+        }
+        new import_obsidian.Notice("Testing API key...");
+        try {
+          const response = await (0, import_obsidian.requestUrl)({
+            url: "https://api.openai.com/v1/models",
+            method: "GET",
+            headers: { "Authorization": `Bearer ${this.plugin.settings.openaiApiKey}` }
+          });
+          if (response.status === 200) {
+            new import_obsidian.Notice("OpenAI API key is valid!");
+          }
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          if (msg.includes("400") || msg.includes("403") || msg.includes("401")) {
+            new import_obsidian.Notice("Invalid API key. Please check and try again.");
+          } else {
+            new import_obsidian.Notice(`Connection error: ${msg}`);
+          }
+        }
       })
     );
     new import_obsidian.Setting(containerEl).setName("Anthropic API key").setDesc("Optional. Used for prompt generation if Anthropic is selected.").addText(
@@ -181,6 +230,40 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
       (button) => button.setIcon("external-link").setTooltip("Get API key").onClick(() => {
         window.open("https://console.anthropic.com/settings/keys");
       })
+    ).addExtraButton(
+      (button) => button.setIcon("checkmark").setTooltip("Test API key").onClick(async () => {
+        if (!this.plugin.settings.anthropicApiKey) {
+          new import_obsidian.Notice("Please enter an API key first");
+          return;
+        }
+        new import_obsidian.Notice("Testing API key...");
+        try {
+          await (0, import_obsidian.requestUrl)({
+            url: "https://api.anthropic.com/v1/messages",
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": this.plugin.settings.anthropicApiKey,
+              "anthropic-version": "2023-06-01"
+            },
+            body: JSON.stringify({
+              model: "claude-sonnet-4-5-20250929",
+              max_tokens: 1,
+              messages: [{ role: "user", content: "Hi" }]
+            })
+          });
+          new import_obsidian.Notice("Anthropic API key is valid!");
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          if (msg.includes("401") || msg.includes("403")) {
+            new import_obsidian.Notice("Invalid API key. Please check and try again.");
+          } else if (msg.includes("400") || msg.includes("200") || msg.includes("529")) {
+            new import_obsidian.Notice("Anthropic API key is valid!");
+          } else {
+            new import_obsidian.Notice(`Connection error: ${msg}`);
+          }
+        }
+      })
     );
     new import_obsidian.Setting(containerEl).setName("xAI API key").setDesc("Optional. Used for prompt generation if xAI is selected.").addText(
       (text) => text.setPlaceholder("Enter your xAI API key").setValue(this.plugin.settings.xaiApiKey).onChange(async (value) => {
@@ -190,6 +273,31 @@ var NanoBananaSettingTab = class extends import_obsidian.PluginSettingTab {
     ).addExtraButton(
       (button) => button.setIcon("external-link").setTooltip("Get API key").onClick(() => {
         window.open("https://console.x.ai/");
+      })
+    ).addExtraButton(
+      (button) => button.setIcon("checkmark").setTooltip("Test API key").onClick(async () => {
+        if (!this.plugin.settings.xaiApiKey) {
+          new import_obsidian.Notice("Please enter an API key first");
+          return;
+        }
+        new import_obsidian.Notice("Testing API key...");
+        try {
+          const response = await (0, import_obsidian.requestUrl)({
+            url: "https://api.x.ai/v1/models",
+            method: "GET",
+            headers: { "Authorization": `Bearer ${this.plugin.settings.xaiApiKey}` }
+          });
+          if (response.status === 200) {
+            new import_obsidian.Notice("xAI API key is valid!");
+          }
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          if (msg.includes("400") || msg.includes("403") || msg.includes("401")) {
+            new import_obsidian.Notice("Invalid API key. Please check and try again.");
+          } else {
+            new import_obsidian.Notice(`Connection error: ${msg}`);
+          }
+        }
       })
     );
     new import_obsidian.Setting(containerEl).setName("Prompt generation").setHeading();
@@ -393,25 +501,34 @@ var _PromptService = class _PromptService {
   }
   async callOpenAI(model, apiKey, content) {
     var _a, _b, _c, _d;
-    const response = await this.withTimeout((0, import_obsidian2.requestUrl)({
-      url: "https://api.openai.com/v1/chat/completions",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: `Create an image prompt for the following content:
+    let response;
+    try {
+      response = await this.withTimeout((0, import_obsidian2.requestUrl)({
+        url: "https://api.openai.com/v1/chat/completions",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: `Create an image prompt for the following content:
 
 ${content}` }
-        ],
-        max_tokens: 1e3,
-        temperature: 0.7
-      })
-    }));
+          ],
+          max_tokens: 1e3,
+          temperature: 0.7
+        })
+      }));
+    } catch (reqError) {
+      const msg = reqError instanceof Error ? reqError.message : String(reqError);
+      const statusMatch = msg.match(/status\s+(\d+)/);
+      const status = statusMatch ? parseInt(statusMatch[1]) : 0;
+      console.error(`[NanoBanana] OpenAI API error (status ${status}):`, msg);
+      throw this.handleHttpError(status, msg, "openai");
+    }
     if (response.status !== 200) {
       throw this.handleHttpError(response.status, response.text, "openai");
     }
@@ -425,37 +542,46 @@ ${content}` }
   async callGoogle(model, apiKey, content) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    const response = await this.withTimeout((0, import_obsidian2.requestUrl)({
-      url,
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        // System instruction - REST API uses snake_case
-        system_instruction: {
-          parts: [{ text: SYSTEM_PROMPT }]
+    let response;
+    try {
+      response = await this.withTimeout((0, import_obsidian2.requestUrl)({
+        url,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
         },
-        contents: [{
-          role: "user",
-          parts: [{
-            text: `Create an image prompt for the following content:
+        body: JSON.stringify({
+          // System instruction - REST API uses snake_case
+          system_instruction: {
+            parts: [{ text: SYSTEM_PROMPT }]
+          },
+          contents: [{
+            role: "user",
+            parts: [{
+              text: `Create an image prompt for the following content:
 
 ${content}`
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1e3
-        },
-        safetySettings: [
-          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
-          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
-          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
-          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
-        ]
-      })
-    }));
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 1e3
+          },
+          safetySettings: [
+            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+          ]
+        })
+      }));
+    } catch (reqError) {
+      const msg = reqError instanceof Error ? reqError.message : String(reqError);
+      const statusMatch = msg.match(/status\s+(\d+)/);
+      const status = statusMatch ? parseInt(statusMatch[1]) : 0;
+      console.error(`[NanoBanana] Google API error (status ${status}):`, msg);
+      throw this.handleHttpError(status, msg, "google");
+    }
     if (response.status !== 200) {
       throw this.handleHttpError(response.status, response.text, "google");
     }
@@ -473,25 +599,34 @@ ${content}`
   }
   async callAnthropic(model, apiKey, content) {
     var _a, _b, _c;
-    const response = await this.withTimeout((0, import_obsidian2.requestUrl)({
-      url: "https://api.anthropic.com/v1/messages",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01"
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: 1e3,
-        system: SYSTEM_PROMPT,
-        messages: [
-          { role: "user", content: `Create an image prompt for the following content:
+    let response;
+    try {
+      response = await this.withTimeout((0, import_obsidian2.requestUrl)({
+        url: "https://api.anthropic.com/v1/messages",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01"
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 1e3,
+          system: SYSTEM_PROMPT,
+          messages: [
+            { role: "user", content: `Create an image prompt for the following content:
 
 ${content}` }
-        ]
-      })
-    }));
+          ]
+        })
+      }));
+    } catch (reqError) {
+      const msg = reqError instanceof Error ? reqError.message : String(reqError);
+      const statusMatch = msg.match(/status\s+(\d+)/);
+      const status = statusMatch ? parseInt(statusMatch[1]) : 0;
+      console.error(`[NanoBanana] Anthropic API error (status ${status}):`, msg);
+      throw this.handleHttpError(status, msg, "anthropic");
+    }
     if (response.status !== 200) {
       throw this.handleHttpError(response.status, response.text, "anthropic");
     }
@@ -544,7 +679,12 @@ ${content}` }
   }
   handleHttpError(status, responseText, provider) {
     if (status === 401 || status === 403) {
-      return this.createError("INVALID_API_KEY", `Invalid ${PROVIDER_CONFIGS[provider].name} API key`);
+      return this.createError("INVALID_API_KEY", `Invalid ${PROVIDER_CONFIGS[provider].name} API key. Please check your API key in settings.`);
+    }
+    if (status === 400) {
+      if (responseText.includes("API_KEY_INVALID") || responseText.includes("API key not valid")) {
+        return this.createError("INVALID_API_KEY", `Invalid ${PROVIDER_CONFIGS[provider].name} API key. Please check your API key in settings.`);
+      }
     }
     if (status === 429) {
       return this.createError("RATE_LIMIT", "API rate limit exceeded. Please wait a few minutes and try again.", false);
@@ -561,7 +701,10 @@ ${content}` }
       return this.createError("RATE_LIMIT", "API rate limit exceeded. Please wait a few minutes and try again.", false);
     }
     if (errorMessage.includes("status 401") || errorMessage.includes("status 403")) {
-      return this.createError("INVALID_API_KEY", `Invalid ${PROVIDER_CONFIGS[provider].name} API key`);
+      return this.createError("INVALID_API_KEY", `Invalid ${PROVIDER_CONFIGS[provider].name} API key. Please check your API key in settings.`);
+    }
+    if (errorMessage.includes("API_KEY_INVALID") || errorMessage.includes("API key not valid")) {
+      return this.createError("INVALID_API_KEY", `Invalid ${PROVIDER_CONFIGS[provider].name} API key. Please check your API key in settings.`);
     }
     if (errorMessage.includes("net::") || errorMessage.includes("network")) {
       return this.createError("NETWORK_ERROR", "Network connection error. Check your internet connection.", true);
@@ -618,32 +761,41 @@ var _ImageService = class _ImageService {
       }
       const fullPrompt = IMAGE_GENERATION_PROMPT_TEMPLATE.replace("{style}", styleDescription).replace("{prompt}", prompt) + "\n\n" + languageInstructions[preferredLanguage];
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      const response = await this.withTimeout((0, import_obsidian3.requestUrl)({
-        url,
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: fullPrompt
-            }]
-          }],
-          generationConfig: {
-            responseModalities: ["TEXT", "IMAGE"],
-            imageConfig: {
-              imageSize
-            }
+      let response;
+      try {
+        response = await this.withTimeout((0, import_obsidian3.requestUrl)({
+          url,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
           },
-          safetySettings: [
-            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
-            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
-            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
-            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
-          ]
-        })
-      }));
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: fullPrompt
+              }]
+            }],
+            generationConfig: {
+              responseModalities: ["TEXT", "IMAGE"],
+              imageConfig: {
+                imageSize
+              }
+            },
+            safetySettings: [
+              { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+              { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+              { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+              { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+            ]
+          })
+        }));
+      } catch (reqError) {
+        const msg = reqError instanceof Error ? reqError.message : String(reqError);
+        const statusMatch = msg.match(/status\s+(\d+)/);
+        const status = statusMatch ? parseInt(statusMatch[1]) : 0;
+        console.error(`[NanoBanana] Google Image API error (status ${status}):`, msg);
+        throw this.handleHttpError(status, msg);
+      }
       if (response.status !== 200) {
         throw this.handleHttpError(response.status, response.text);
       }
@@ -706,6 +858,9 @@ var _ImageService = class _ImageService {
       return this.createError("RATE_LIMIT", "API rate limit exceeded. Please wait and try again.", true);
     }
     if (status === 400) {
+      if (responseText.includes("API_KEY_INVALID") || responseText.includes("API key not valid")) {
+        return this.createError("INVALID_API_KEY", "Invalid Google API key. Please check your API key in settings.");
+      }
       if (responseText.includes("SAFETY") || responseText.includes("blocked")) {
         return this.createError("CONTENT_FILTERED", "Content was blocked by safety filters. Try modifying your prompt.");
       }
@@ -718,6 +873,12 @@ var _ImageService = class _ImageService {
   }
   handleApiError(error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes("status 401") || errorMessage.includes("status 403")) {
+      return this.createError("INVALID_API_KEY", "Invalid Google API key. Please check your API key in settings.");
+    }
+    if (errorMessage.includes("API_KEY_INVALID") || errorMessage.includes("API key not valid")) {
+      return this.createError("INVALID_API_KEY", "Invalid Google API key. Please check your API key in settings.");
+    }
     if (errorMessage.includes("net::") || errorMessage.includes("network")) {
       return this.createError("NETWORK_ERROR", "Network connection error. Check your internet connection.", true);
     }

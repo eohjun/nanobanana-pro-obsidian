@@ -65,32 +65,41 @@ export class ImageService {
 
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-      const response = await this.withTimeout(requestUrl({
-        url,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: fullPrompt
-            }]
-          }],
-          generationConfig: {
-            responseModalities: ['TEXT', 'IMAGE'],
-            imageConfig: {
-              imageSize: imageSize
-            }
+      let response;
+      try {
+        response = await this.withTimeout(requestUrl({
+          url,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
           },
-          safetySettings: [
-            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
-            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
-          ]
-        })
-      }));
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: fullPrompt
+              }]
+            }],
+            generationConfig: {
+              responseModalities: ['TEXT', 'IMAGE'],
+              imageConfig: {
+                imageSize: imageSize
+              }
+            },
+            safetySettings: [
+              { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+              { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
+            ]
+          })
+        }));
+      } catch (reqError: unknown) {
+        const msg = reqError instanceof Error ? reqError.message : String(reqError);
+        const statusMatch = msg.match(/status\s+(\d+)/);
+        const status = statusMatch ? parseInt(statusMatch[1]) : 0;
+        console.error(`[NanoBanana] Google Image API error (status ${status}):`, msg);
+        throw this.handleHttpError(status, msg);
+      }
 
       if (response.status !== 200) {
         throw this.handleHttpError(response.status, response.text);
@@ -166,6 +175,10 @@ export class ImageService {
       return this.createError('RATE_LIMIT', 'API rate limit exceeded. Please wait and try again.', true);
     }
     if (status === 400) {
+      // Check for invalid API key (Google returns 400 for revoked/invalid keys)
+      if (responseText.includes('API_KEY_INVALID') || responseText.includes('API key not valid')) {
+        return this.createError('INVALID_API_KEY', 'Invalid Google API key. Please check your API key in settings.');
+      }
       // Check for content filtering
       if (responseText.includes('SAFETY') || responseText.includes('blocked')) {
         return this.createError('CONTENT_FILTERED', 'Content was blocked by safety filters. Try modifying your prompt.');
@@ -180,6 +193,16 @@ export class ImageService {
 
   private handleApiError(error: unknown): GenerationErrorClass {
     const errorMessage = error instanceof Error ? error.message : String(error);
+
+    // Detect auth errors from requestUrl exception messages
+    if (errorMessage.includes('status 401') || errorMessage.includes('status 403')) {
+      return this.createError('INVALID_API_KEY', 'Invalid Google API key. Please check your API key in settings.');
+    }
+
+    // Detect API key invalid from 400 responses (Google-specific)
+    if (errorMessage.includes('API_KEY_INVALID') || errorMessage.includes('API key not valid')) {
+      return this.createError('INVALID_API_KEY', 'Invalid Google API key. Please check your API key in settings.');
+    }
 
     if (errorMessage.includes('net::') || errorMessage.includes('network')) {
       return this.createError('NETWORK_ERROR', 'Network connection error. Check your internet connection.', true);

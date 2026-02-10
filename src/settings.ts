@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice, requestUrl } from 'obsidian';
 import NanoBananaPlugin from './main';
 import { AIProvider, ImageStyle, ImageSize, PreferredLanguage, CartoonCuts, PROVIDER_CONFIGS } from './types';
 
@@ -34,6 +34,33 @@ export class NanoBananaSettingTab extends PluginSettingTab {
         .onClick(() => {
           window.open('https://aistudio.google.com/apikey');
         })
+      )
+      .addExtraButton(button => button
+        .setIcon('checkmark')
+        .setTooltip('Test API key')
+        .onClick(async () => {
+          if (!this.plugin.settings.googleApiKey) {
+            new Notice('Please enter an API key first');
+            return;
+          }
+          new Notice('Testing API key...');
+          try {
+            const response = await requestUrl({
+              url: `https://generativelanguage.googleapis.com/v1beta/models?key=${this.plugin.settings.googleApiKey}`,
+              method: 'GET'
+            });
+            if (response.status === 200) {
+              new Notice('Google API key is valid!');
+            }
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            if (msg.includes('400') || msg.includes('403') || msg.includes('401')) {
+              new Notice('Invalid API key. Please check and try again.');
+            } else {
+              new Notice(`Connection error: ${msg}`);
+            }
+          }
+        })
       );
 
     new Setting(containerEl)
@@ -52,6 +79,34 @@ export class NanoBananaSettingTab extends PluginSettingTab {
         .setTooltip('Get API key')
         .onClick(() => {
           window.open('https://platform.openai.com/api-keys');
+        })
+      )
+      .addExtraButton(button => button
+        .setIcon('checkmark')
+        .setTooltip('Test API key')
+        .onClick(async () => {
+          if (!this.plugin.settings.openaiApiKey) {
+            new Notice('Please enter an API key first');
+            return;
+          }
+          new Notice('Testing API key...');
+          try {
+            const response = await requestUrl({
+              url: 'https://api.openai.com/v1/models',
+              method: 'GET',
+              headers: { 'Authorization': `Bearer ${this.plugin.settings.openaiApiKey}` }
+            });
+            if (response.status === 200) {
+              new Notice('OpenAI API key is valid!');
+            }
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            if (msg.includes('400') || msg.includes('403') || msg.includes('401')) {
+              new Notice('Invalid API key. Please check and try again.');
+            } else {
+              new Notice(`Connection error: ${msg}`);
+            }
+          }
         })
       );
 
@@ -72,6 +127,44 @@ export class NanoBananaSettingTab extends PluginSettingTab {
         .onClick(() => {
           window.open('https://console.anthropic.com/settings/keys');
         })
+      )
+      .addExtraButton(button => button
+        .setIcon('checkmark')
+        .setTooltip('Test API key')
+        .onClick(async () => {
+          if (!this.plugin.settings.anthropicApiKey) {
+            new Notice('Please enter an API key first');
+            return;
+          }
+          new Notice('Testing API key...');
+          try {
+            await requestUrl({
+              url: 'https://api.anthropic.com/v1/messages',
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': this.plugin.settings.anthropicApiKey,
+                'anthropic-version': '2023-06-01'
+              },
+              body: JSON.stringify({
+                model: 'claude-sonnet-4-5-20250929',
+                max_tokens: 1,
+                messages: [{ role: 'user', content: 'Hi' }]
+              })
+            });
+            new Notice('Anthropic API key is valid!');
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            if (msg.includes('401') || msg.includes('403')) {
+              new Notice('Invalid API key. Please check and try again.');
+            } else if (msg.includes('400') || msg.includes('200') || msg.includes('529')) {
+              // 400 can mean invalid model but key is valid; 529 = overloaded but key works
+              new Notice('Anthropic API key is valid!');
+            } else {
+              new Notice(`Connection error: ${msg}`);
+            }
+          }
+        })
       );
 
     new Setting(containerEl)
@@ -90,6 +183,34 @@ export class NanoBananaSettingTab extends PluginSettingTab {
         .setTooltip('Get API key')
         .onClick(() => {
           window.open('https://console.x.ai/');
+        })
+      )
+      .addExtraButton(button => button
+        .setIcon('checkmark')
+        .setTooltip('Test API key')
+        .onClick(async () => {
+          if (!this.plugin.settings.xaiApiKey) {
+            new Notice('Please enter an API key first');
+            return;
+          }
+          new Notice('Testing API key...');
+          try {
+            const response = await requestUrl({
+              url: 'https://api.x.ai/v1/models',
+              method: 'GET',
+              headers: { 'Authorization': `Bearer ${this.plugin.settings.xaiApiKey}` }
+            });
+            if (response.status === 200) {
+              new Notice('xAI API key is valid!');
+            }
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            if (msg.includes('400') || msg.includes('403') || msg.includes('401')) {
+              new Notice('Invalid API key. Please check and try again.');
+            } else {
+              new Notice(`Connection error: ${msg}`);
+            }
+          }
         })
       );
 

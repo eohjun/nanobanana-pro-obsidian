@@ -81,23 +81,32 @@ export class PromptService {
   }
 
   private async callOpenAI(model: string, apiKey: string, content: string): Promise<string> {
-    const response = await this.withTimeout(requestUrl({
-      url: 'https://api.openai.com/v1/chat/completions',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: `Create an image prompt for the following content:\n\n${content}` }
-        ],
-        max_tokens: 1000,
-        temperature: 0.7
-      })
-    }));
+    let response;
+    try {
+      response = await this.withTimeout(requestUrl({
+        url: 'https://api.openai.com/v1/chat/completions',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: `Create an image prompt for the following content:\n\n${content}` }
+          ],
+          max_tokens: 1000,
+          temperature: 0.7
+        })
+      }));
+    } catch (reqError: unknown) {
+      const msg = reqError instanceof Error ? reqError.message : String(reqError);
+      const statusMatch = msg.match(/status\s+(\d+)/);
+      const status = statusMatch ? parseInt(statusMatch[1]) : 0;
+      console.error(`[NanoBanana] OpenAI API error (status ${status}):`, msg);
+      throw this.handleHttpError(status, msg, 'openai');
+    }
 
     if (response.status !== 200) {
       throw this.handleHttpError(response.status, response.text, 'openai');
@@ -114,35 +123,44 @@ export class PromptService {
   private async callGoogle(model: string, apiKey: string, content: string): Promise<string> {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-    const response = await this.withTimeout(requestUrl({
-      url,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        // System instruction - REST API uses snake_case
-        system_instruction: {
-          parts: [{ text: SYSTEM_PROMPT }]
+    let response;
+    try {
+      response = await this.withTimeout(requestUrl({
+        url,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         },
-        contents: [{
-          role: 'user',
-          parts: [{
-            text: `Create an image prompt for the following content:\n\n${content}`
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1000
-        },
-        safetySettings: [
-          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
-          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
-        ]
-      })
-    }));
+        body: JSON.stringify({
+          // System instruction - REST API uses snake_case
+          system_instruction: {
+            parts: [{ text: SYSTEM_PROMPT }]
+          },
+          contents: [{
+            role: 'user',
+            parts: [{
+              text: `Create an image prompt for the following content:\n\n${content}`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 1000
+          },
+          safetySettings: [
+            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
+          ]
+        })
+      }));
+    } catch (reqError: unknown) {
+      const msg = reqError instanceof Error ? reqError.message : String(reqError);
+      const statusMatch = msg.match(/status\s+(\d+)/);
+      const status = statusMatch ? parseInt(statusMatch[1]) : 0;
+      console.error(`[NanoBanana] Google API error (status ${status}):`, msg);
+      throw this.handleHttpError(status, msg, 'google');
+    }
 
     if (response.status !== 200) {
       throw this.handleHttpError(response.status, response.text, 'google');
@@ -169,23 +187,32 @@ export class PromptService {
   }
 
   private async callAnthropic(model: string, apiKey: string, content: string): Promise<string> {
-    const response = await this.withTimeout(requestUrl({
-      url: 'https://api.anthropic.com/v1/messages',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: model,
-        max_tokens: 1000,
-        system: SYSTEM_PROMPT,
-        messages: [
-          { role: 'user', content: `Create an image prompt for the following content:\n\n${content}` }
-        ]
-      })
-    }));
+    let response;
+    try {
+      response = await this.withTimeout(requestUrl({
+        url: 'https://api.anthropic.com/v1/messages',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: model,
+          max_tokens: 1000,
+          system: SYSTEM_PROMPT,
+          messages: [
+            { role: 'user', content: `Create an image prompt for the following content:\n\n${content}` }
+          ]
+        })
+      }));
+    } catch (reqError: unknown) {
+      const msg = reqError instanceof Error ? reqError.message : String(reqError);
+      const statusMatch = msg.match(/status\s+(\d+)/);
+      const status = statusMatch ? parseInt(statusMatch[1]) : 0;
+      console.error(`[NanoBanana] Anthropic API error (status ${status}):`, msg);
+      throw this.handleHttpError(status, msg, 'anthropic');
+    }
 
     if (response.status !== 200) {
       throw this.handleHttpError(response.status, response.text, 'anthropic');
@@ -245,7 +272,12 @@ export class PromptService {
 
   private handleHttpError(status: number, responseText: string, provider: AIProvider): GenerationErrorClass {
     if (status === 401 || status === 403) {
-      return this.createError('INVALID_API_KEY', `Invalid ${PROVIDER_CONFIGS[provider].name} API key`);
+      return this.createError('INVALID_API_KEY', `Invalid ${PROVIDER_CONFIGS[provider].name} API key. Please check your API key in settings.`);
+    }
+    if (status === 400) {
+      if (responseText.includes('API_KEY_INVALID') || responseText.includes('API key not valid')) {
+        return this.createError('INVALID_API_KEY', `Invalid ${PROVIDER_CONFIGS[provider].name} API key. Please check your API key in settings.`);
+      }
     }
     if (status === 429) {
       // Rate limit errors should NOT be retried - retrying makes it worse
@@ -268,7 +300,12 @@ export class PromptService {
 
     // Detect 401/403 authentication errors
     if (errorMessage.includes('status 401') || errorMessage.includes('status 403')) {
-      return this.createError('INVALID_API_KEY', `Invalid ${PROVIDER_CONFIGS[provider].name} API key`);
+      return this.createError('INVALID_API_KEY', `Invalid ${PROVIDER_CONFIGS[provider].name} API key. Please check your API key in settings.`);
+    }
+
+    // Detect 400 with API key invalid (Google returns 400 for bad keys)
+    if (errorMessage.includes('API_KEY_INVALID') || errorMessage.includes('API key not valid')) {
+      return this.createError('INVALID_API_KEY', `Invalid ${PROVIDER_CONFIGS[provider].name} API key. Please check your API key in settings.`);
     }
 
     if (errorMessage.includes('net::') || errorMessage.includes('network')) {
