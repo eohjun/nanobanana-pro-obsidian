@@ -19,7 +19,7 @@ export class DriveService {
   private readonly API_URL = 'https://www.googleapis.com/drive/v3';
   private readonly UPLOAD_URL = 'https://www.googleapis.com/upload/drive/v3';
   private readonly SCOPES = [
-    'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive',
     'https://www.googleapis.com/auth/userinfo.email'
   ];
   private readonly REQUEST_TIMEOUT_MS = 15000;

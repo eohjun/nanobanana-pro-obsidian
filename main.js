@@ -1175,7 +1175,7 @@ var DriveService = class {
     this.API_URL = "https://www.googleapis.com/drive/v3";
     this.UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3";
     this.SCOPES = [
-      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/drive",
       "https://www.googleapis.com/auth/userinfo.email"
     ];
     this.REQUEST_TIMEOUT_MS = 15e3;
