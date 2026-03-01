@@ -1,5 +1,5 @@
 import { App, TFile, TFolder, normalizePath } from 'obsidian';
-import { GenerationError, GenerationErrorClass } from '../types';
+import { GenerationError, GenerationErrorClass, DriveUploadResult } from '../types';
 
 export class FileService {
   constructor(private app: App) {}
@@ -41,14 +41,21 @@ export class FileService {
   }
 
   /**
-   * Embed image at the top of the note
+   * Embed image at the top of the note.
+   * If driveResult is provided, uses HTML <img> embedding for Drive images.
+   * Otherwise uses standard ![[path]] embedding.
    */
-  async embedImageInNote(noteFile: TFile, imagePath: string): Promise<void> {
+  async embedImageInNote(noteFile: TFile, imagePath: string, driveResult?: DriveUploadResult): Promise<void> {
     try {
       const content = await this.app.vault.read(noteFile);
 
-      // Create embed syntax
-      const embedSyntax = `![[${imagePath}]]\n\n`;
+      // Build embed syntax based on storage mode
+      let embedSyntax: string;
+      if (driveResult) {
+        embedSyntax = this.buildDriveEmbed(driveResult) + '\n\n';
+      } else {
+        embedSyntax = `![[${imagePath}]]\n\n`;
+      }
 
       // Check if note has frontmatter
       const frontmatterMatch = content.match(/^---\n[\s\S]*?\n---\n/);
@@ -56,29 +63,21 @@ export class FileService {
       let newContent: string;
 
       if (frontmatterMatch) {
-        // Insert after frontmatter
         const frontmatter = frontmatterMatch[0];
         const restContent = content.slice(frontmatter.length);
+        const existing = this.findExistingPosterEmbed(restContent);
 
-        // Check if already has a poster embed (to replace it)
-        const existingEmbed = restContent.match(/^!\[\[.*-poster-\d+\.(png|jpg|jpeg|webp)\]\]\n\n/);
-
-        if (existingEmbed) {
-          // Replace existing embed
-          newContent = frontmatter + embedSyntax + restContent.slice(existingEmbed[0].length);
+        if (existing !== null) {
+          newContent = frontmatter + embedSyntax + restContent.slice(existing);
         } else {
-          // Add new embed
           newContent = frontmatter + embedSyntax + restContent;
         }
       } else {
-        // Check if already has a poster embed at the start
-        const existingEmbed = content.match(/^!\[\[.*-poster-\d+\.(png|jpg|jpeg|webp)\]\]\n\n/);
+        const existing = this.findExistingPosterEmbed(content);
 
-        if (existingEmbed) {
-          // Replace existing embed
-          newContent = embedSyntax + content.slice(existingEmbed[0].length);
+        if (existing !== null) {
+          newContent = embedSyntax + content.slice(existing);
         } else {
-          // Add at the beginning
           newContent = embedSyntax + content;
         }
       }
@@ -87,6 +86,34 @@ export class FileService {
     } catch (error) {
       throw this.createError('SAVE_ERROR', `Failed to embed image: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  /**
+   * Build Drive HTML embed for an uploaded image
+   */
+  private buildDriveEmbed(result: DriveUploadResult): string {
+    return `<div class="nanobanana-poster" style="width: 100%; margin: 0 auto; text-align: center;">
+<a href="${result.webViewLink}" target="_blank">
+<img src="https://drive.google.com/thumbnail?id=${result.fileId}&sz=w1000" alt="${result.fileName}" style="max-width: 100%; height: auto; object-fit: contain; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); cursor: pointer;"/>
+</a>
+</div>`;
+  }
+
+  /**
+   * Find existing poster embed at the start of content.
+   * Supports both local (![[...-poster-TIMESTAMP.ext]]) and Drive (<div class="nanobanana-poster">) formats.
+   * Returns the length of the matched embed string (including trailing newlines) or null.
+   */
+  private findExistingPosterEmbed(content: string): number | null {
+    // Local embed: ![[...-poster-TIMESTAMP.ext]]\n\n
+    const localMatch = content.match(/^!\[\[.*-poster-\d+\.(png|jpg|jpeg|webp)\]\]\n\n/);
+    if (localMatch) return localMatch[0].length;
+
+    // Drive embed: <div class="nanobanana-poster">...</div>\n\n
+    const driveMatch = content.match(/^<div class="nanobanana-poster"[\s\S]*?<\/div>\n\n/);
+    if (driveMatch) return driveMatch[0].length;
+
+    return null;
   }
 
   /**

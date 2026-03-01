@@ -26,7 +26,17 @@ export const DEFAULT_SETTINGS: NanoBananaSettings = {
   showProgressModal: true,
 
   // Advanced
-  customPromptPrefix: ''
+  customPromptPrefix: '',
+
+  // Google Drive Storage
+  storageMode: 'local',
+  googleClientId: '',
+  googleClientSecret: '',
+  googleAccessToken: '',
+  googleRefreshToken: '',
+  tokenExpiresAt: 0,
+  oauthRedirectPort: 8586,
+  driveFolder: 'Obsidian/NanoBanana'
 };
 
 export const SYSTEM_PROMPT = `You are an expert visual designer specializing in creating image generation prompts for AI art models.

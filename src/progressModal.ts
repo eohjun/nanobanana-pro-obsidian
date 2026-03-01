@@ -1,5 +1,5 @@
 import { App, Modal } from 'obsidian';
-import { ProgressState, ProgressStep, GenerationError, PreferredLanguage } from './types';
+import { ProgressState, ProgressStep, GenerationError, PreferredLanguage, StorageMode } from './types';
 import { getMessages, UIMessages } from './i18n';
 
 export class ProgressModal extends Modal {
@@ -14,7 +14,7 @@ export class ProgressModal extends Modal {
 
   private steps: { key: ProgressStep; label: string; icon: string }[] = [];
 
-  constructor(app: App, language: PreferredLanguage = 'en') {
+  constructor(app: App, language: PreferredLanguage = 'en', storageMode: StorageMode = 'local') {
     super(app);
     this.messages = getMessages(language);
 
@@ -26,6 +26,14 @@ export class ProgressModal extends Modal {
       { key: 'saving', label: this.messages.stepSaving, icon: '💾' },
       { key: 'embedding', label: this.messages.stepEmbedding, icon: '📎' }
     ];
+
+    // Insert Drive upload step before embedding when in drive mode
+    if (storageMode === 'drive') {
+      const embeddingIndex = this.steps.findIndex(s => s.key === 'embedding');
+      this.steps.splice(embeddingIndex, 0, {
+        key: 'uploading-drive', label: this.messages.stepUploadingDrive, icon: '☁️'
+      });
+    }
   }
 
   onOpen() {

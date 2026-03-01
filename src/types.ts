@@ -9,6 +9,8 @@ export type ImageSize = '1K' | '2K' | '4K';
 
 export type CartoonCuts = '4' | '6' | '8' | 'custom';
 
+export type StorageMode = 'local' | 'drive';
+
 // Plugin settings interface
 export interface NanoBananaSettings {
   // API Keys
@@ -37,6 +39,16 @@ export interface NanoBananaSettings {
 
   // Advanced
   customPromptPrefix: string;
+
+  // Google Drive Storage
+  storageMode: StorageMode;
+  googleClientId: string;
+  googleClientSecret: string;
+  googleAccessToken: string;
+  googleRefreshToken: string;
+  tokenExpiresAt: number;
+  oauthRedirectPort: number;
+  driveFolder: string;
 }
 
 // Progress states
@@ -46,6 +58,7 @@ export type ProgressStep =
   | 'preview'
   | 'generating-image'
   | 'saving'
+  | 'uploading-drive'
   | 'embedding'
   | 'complete'
   | 'error';
@@ -66,6 +79,7 @@ export type ErrorType =
   | 'CONTENT_FILTERED'
   | 'NO_CONTENT'
   | 'SAVE_ERROR'
+  | 'DRIVE_UPLOAD_ERROR'
   | 'UNKNOWN';
 
 export interface GenerationError {
@@ -88,6 +102,22 @@ export class GenerationErrorClass extends Error {
     this.details = details;
     this.retryable = retryable;
   }
+}
+
+// Google Drive types
+export interface DriveUploadResult {
+  fileId: string;
+  webViewLink: string;
+  webContentLink: string;
+  fileName: string;
+  mimeType: string;
+}
+
+export interface OAuthTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  expiresAt: number;
 }
 
 // Gemini API response types

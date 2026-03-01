@@ -1,6 +1,6 @@
-import { App, PluginSettingTab, Setting, Notice, requestUrl } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice, requestUrl, Platform } from 'obsidian';
 import NanoBananaPlugin from './main';
-import { AIProvider, ImageStyle, ImageSize, PreferredLanguage, CartoonCuts, PROVIDER_CONFIGS } from './types';
+import { AIProvider, ImageStyle, ImageSize, PreferredLanguage, CartoonCuts, StorageMode, PROVIDER_CONFIGS } from './types';
 
 export class NanoBananaSettingTab extends PluginSettingTab {
   plugin: NanoBananaPlugin;
@@ -407,6 +407,145 @@ export class NanoBananaSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         })
       );
+
+    // ==================== Image Storage Section ====================
+    new Setting(containerEl).setName('Image storage').setHeading();
+
+    new Setting(containerEl)
+      .setName('Storage mode')
+      .setDesc('Where to store generated images. "Local" saves to vault only. "Google Drive" uploads to Drive and embeds a public link (works across devices).')
+      .addDropdown(dropdown => dropdown
+        .addOptions({
+          'local': 'Local (vault folder)',
+          'drive': 'Google Drive'
+        })
+        .setValue(this.plugin.settings.storageMode)
+        .onChange(async (value: StorageMode) => {
+          this.plugin.settings.storageMode = value;
+          await this.plugin.saveSettings();
+          this.display();
+        })
+      );
+
+    if (this.plugin.settings.storageMode === 'drive') {
+      new Setting(containerEl)
+        .setName('Google Client ID')
+        .setDesc('OAuth 2.0 Client ID from Google Cloud Console.')
+        .addText(text => text
+          .setPlaceholder('your-client-id.apps.googleusercontent.com')
+          .setValue(this.plugin.settings.googleClientId)
+          .onChange(async (value) => {
+            this.plugin.settings.googleClientId = value;
+            await this.plugin.saveSettings();
+          })
+        )
+        .addExtraButton(button => button
+          .setIcon('external-link')
+          .setTooltip('Open Google Cloud Console')
+          .onClick(() => {
+            window.open('https://console.cloud.google.com/apis/credentials');
+          })
+        );
+
+      new Setting(containerEl)
+        .setName('Google Client Secret')
+        .setDesc('OAuth 2.0 Client Secret from Google Cloud Console.')
+        .addText(text => text
+          .setPlaceholder('Enter your client secret')
+          .setValue(this.plugin.settings.googleClientSecret)
+          .onChange(async (value) => {
+            this.plugin.settings.googleClientSecret = value;
+            await this.plugin.saveSettings();
+          })
+        );
+
+      const driveService = this.plugin.getDriveService();
+      const isConnected = driveService?.isConnected() ?? false;
+
+      new Setting(containerEl)
+        .setName('Google Drive authorization')
+        .setDesc(isConnected
+          ? 'Connected to Google Drive.'
+          : 'Click to authorize access to Google Drive.')
+        .addButton(button => button
+          .setButtonText(isConnected ? 'Reconnect' : 'Authorize')
+          .setCta()
+          .onClick(async () => {
+            if (!Platform.isDesktop) {
+              new Notice('Google Drive authorization requires the desktop app.');
+              return;
+            }
+            if (!this.plugin.settings.googleClientId || !this.plugin.settings.googleClientSecret) {
+              new Notice('Please enter Client ID and Client Secret first.');
+              return;
+            }
+            try {
+              await this.plugin.authorizeDrive();
+              new Notice('Google Drive connected successfully!');
+              this.display();
+            } catch (e) {
+              new Notice(`Authorization failed: ${e instanceof Error ? e.message : String(e)}`);
+            }
+          })
+        )
+        .addButton(button => button
+          .setButtonText('Test connection')
+          .onClick(async () => {
+            if (!driveService || !isConnected) {
+              new Notice('Please authorize Google Drive first.');
+              return;
+            }
+            new Notice('Testing connection...');
+            const result = await driveService.testConnection();
+            if (result.connected) {
+              new Notice(`Connected as ${result.email || 'unknown'}`);
+            } else {
+              new Notice('Connection test failed. Please reconnect.');
+            }
+          })
+        );
+
+      if (isConnected) {
+        new Setting(containerEl)
+          .setName('Disconnect')
+          .setDesc('Remove Google Drive authorization.')
+          .addButton(button => button
+            .setButtonText('Disconnect')
+            .setWarning()
+            .onClick(async () => {
+              driveService?.disconnect();
+              await this.plugin.saveSettings();
+              new Notice('Google Drive disconnected.');
+              this.display();
+            })
+          );
+      }
+
+      new Setting(containerEl)
+        .setName('Drive folder')
+        .setDesc('Folder path in Google Drive where images will be uploaded.')
+        .addText(text => text
+          .setPlaceholder('Obsidian/NanoBanana')
+          .setValue(this.plugin.settings.driveFolder)
+          .onChange(async (value) => {
+            this.plugin.settings.driveFolder = value || 'Obsidian/NanoBanana';
+            await this.plugin.saveSettings();
+          })
+        );
+
+      new Setting(containerEl)
+        .setName('OAuth redirect port')
+        .setDesc('Local port for OAuth callback. Change only if 8586 conflicts with another app.')
+        .addText(text => text
+          .setPlaceholder('8586')
+          .setValue(String(this.plugin.settings.oauthRedirectPort))
+          .onChange(async (value) => {
+            const port = parseInt(value) || 8586;
+            this.plugin.settings.oauthRedirectPort = Math.max(1024, Math.min(65535, port));
+            await this.plugin.saveSettings();
+          })
+        );
+    }
 
     // ==================== Advanced Section ====================
     new Setting(containerEl).setName('Advanced').setHeading();

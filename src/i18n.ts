@@ -38,6 +38,10 @@ export interface UIMessages {
   suggestionContentMayBeSensitive: string;
   suggestionAddContent: string;
 
+  // Drive
+  stepUploadingDrive: string;
+  driveUploadFailed: string;
+
   // Preview Modal
   previewTitle: string;
   previewPromptLabel: string;
@@ -66,6 +70,10 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     stepGeneratingImage: '이미지 생성',
     stepSaving: '파일 저장',
     stepEmbedding: '노트에 삽입',
+
+    // Drive
+    stepUploadingDrive: 'Google Drive 업로드',
+    driveUploadFailed: 'Drive 업로드 실패. 로컬 이미지로 삽입합니다.',
 
     // Success
     successTitle: '✅ knowledge poster 생성 완료!',
@@ -119,6 +127,10 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     stepSaving: 'Saving file',
     stepEmbedding: 'Embedding in note',
 
+    // Drive
+    stepUploadingDrive: 'Uploading to Google Drive',
+    driveUploadFailed: 'Drive upload failed. Embedding local image instead.',
+
     // Success
     successTitle: '✅ Knowledge poster created!',
     successSaved: '📁 saved to',
@@ -170,6 +182,10 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     stepGeneratingImage: '画像生成',
     stepSaving: 'ファイル保存',
     stepEmbedding: 'ノートに挿入',
+
+    // Drive
+    stepUploadingDrive: 'Google Driveにアップロード',
+    driveUploadFailed: 'Driveアップロード失敗。ローカル画像を挿入します。',
 
     // Success
     successTitle: '✅ ナレッジポスター作成完了！',
@@ -223,6 +239,10 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     stepSaving: '保存文件',
     stepEmbedding: '插入笔记',
 
+    // Drive
+    stepUploadingDrive: '上传到Google Drive',
+    driveUploadFailed: 'Drive上传失败。将嵌入本地图片。',
+
     // Success
     successTitle: '✅ 知识海报创建完成！',
     successSaved: '📁 保存位置',
@@ -274,6 +294,10 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     stepGeneratingImage: 'Generando imagen',
     stepSaving: 'Guardando archivo',
     stepEmbedding: 'Insertando en nota',
+
+    // Drive
+    stepUploadingDrive: 'Subiendo a Google Drive',
+    driveUploadFailed: 'Error al subir a Drive. Se insertará la imagen local.',
 
     // Success
     successTitle: '✅ ¡póster de conocimiento creado!',
@@ -327,6 +351,10 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     stepSaving: 'Enregistrement du fichier',
     stepEmbedding: 'Insertion dans la note',
 
+    // Drive
+    stepUploadingDrive: 'Téléversement vers Google Drive',
+    driveUploadFailed: 'Échec du téléversement Drive. Insertion de l\'image locale.',
+
     // Success
     successTitle: '✅ affiche de connaissances créée !',
     successSaved: '📁 Enregistré dans',
@@ -378,6 +406,10 @@ export const MESSAGES: Record<PreferredLanguage, UIMessages> = {
     stepGeneratingImage: 'Bild generieren',
     stepSaving: 'Datei speichern',
     stepEmbedding: 'In Notiz einfügen',
+
+    // Drive
+    stepUploadingDrive: 'Hochladen zu Google Drive',
+    driveUploadFailed: 'Drive-Upload fehlgeschlagen. Lokales Bild wird eingebettet.',
 
     // Success
     successTitle: '✅ wissensposter erstellt!',

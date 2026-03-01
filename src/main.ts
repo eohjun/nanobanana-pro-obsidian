@@ -1,10 +1,11 @@
 import { Plugin, MarkdownView, Notice, TFile } from 'obsidian';
-import { NanoBananaSettings, GenerationError, GenerationErrorClass, ProgressState, CartoonCuts } from './types';
+import { NanoBananaSettings, GenerationError, GenerationErrorClass, ProgressState, CartoonCuts, DriveUploadResult } from './types';
 import { DEFAULT_SETTINGS } from './settingsData';
 import { NanoBananaSettingTab } from './settings';
 import { PromptService } from './services/promptService';
 import { ImageService } from './services/imageService';
 import { FileService } from './services/fileService';
+import { DriveService } from './services/driveService';
 import { ProgressModal } from './progressModal';
 import { PreviewModal, PreviewModalResult } from './previewModal';
 import { QuickOptionsModal, QuickOptionsResult } from './quickOptionsModal';
@@ -14,6 +15,7 @@ export default class NanoBananaPlugin extends Plugin {
   private promptService: PromptService;
   private imageService: ImageService;
   private fileService: FileService;
+  private driveService: DriveService | null = null;
   private lastPrompt: string = '';
   private lastNoteFile: TFile | null = null;
   private isGenerating: boolean = false;
@@ -48,7 +50,32 @@ export default class NanoBananaPlugin extends Plugin {
     // Register settings tab
     this.addSettingTab(new NanoBananaSettingTab(this.app, this));
 
+    // Initialize Drive service
+    this.initDriveService();
+
     console.debug('NanoBanana PRO loaded');
+  }
+
+  private initDriveService(): void {
+    this.driveService = new DriveService({
+      settings: this.settings,
+      onSettingsChange: () => this.saveSettings()
+    });
+  }
+
+  getDriveService(): DriveService | null {
+    return this.driveService;
+  }
+
+  async authorizeDrive(): Promise<void> {
+    if (!this.driveService) {
+      this.initDriveService();
+    }
+    const tokens = await this.driveService!.authorize();
+    this.settings.googleAccessToken = tokens.accessToken;
+    this.settings.googleRefreshToken = tokens.refreshToken;
+    this.settings.tokenExpiresAt = tokens.expiresAt;
+    await this.saveSettings();
   }
 
   onunload() {
@@ -123,7 +150,7 @@ export default class NanoBananaPlugin extends Plugin {
 
         // Show progress modal if enabled
         if (this.settings.showProgressModal) {
-          progressModal = new ProgressModal(this.app, this.settings.preferredLanguage);
+          progressModal = new ProgressModal(this.app, this.settings.preferredLanguage, this.settings.storageMode);
           progressModal.open();
         }
 
@@ -174,7 +201,7 @@ export default class NanoBananaPlugin extends Plugin {
 
           // Reopen progress modal for image generation
           if (this.settings.showProgressModal) {
-            progressModal = new ProgressModal(this.app, this.settings.preferredLanguage);
+            progressModal = new ProgressModal(this.app, this.settings.preferredLanguage, this.settings.storageMode);
             progressModal.open();
           }
         }
@@ -212,6 +239,29 @@ export default class NanoBananaPlugin extends Plugin {
           this.settings.attachmentFolder
         );
 
+        // Step 4.5: Upload to Drive (conditional)
+        let driveResult: DriveUploadResult | undefined;
+        if (this.settings.storageMode === 'drive' && this.driveService) {
+          this.updateProgress(progressModal, {
+            step: 'uploading-drive',
+            progress: 88,
+            message: this.getProgressMessage('uploading-drive')
+          });
+
+          try {
+            const fileName = imagePath.split('/').pop() || 'poster.png';
+            driveResult = await this.driveService.uploadImage(
+              imageResult.imageData,
+              imageResult.mimeType,
+              fileName
+            );
+          } catch (error) {
+            console.error('[NanoBanana] Drive upload failed, falling back to local:', error);
+            new Notice(this.getProgressMessage('drive-upload-failed'));
+            // driveResult remains undefined → local embed fallback
+          }
+        }
+
         // Step 5: Embed in note
         this.updateProgress(progressModal, {
           step: 'embedding',
@@ -219,7 +269,7 @@ export default class NanoBananaPlugin extends Plugin {
           message: this.getProgressMessage('embedding')
         });
 
-        await this.fileService.embedImageInNote(noteFile, imagePath);
+        await this.fileService.embedImageInNote(noteFile, imagePath, driveResult);
 
         // Success
         this.updateProgress(progressModal, {
@@ -332,7 +382,7 @@ export default class NanoBananaPlugin extends Plugin {
 
     try {
       if (this.settings.showProgressModal) {
-        progressModal = new ProgressModal(this.app, this.settings.preferredLanguage);
+        progressModal = new ProgressModal(this.app, this.settings.preferredLanguage, this.settings.storageMode);
         progressModal.open();
       }
 
@@ -368,13 +418,35 @@ export default class NanoBananaPlugin extends Plugin {
         this.settings.attachmentFolder
       );
 
+      // Upload to Drive (conditional)
+      let driveResult: DriveUploadResult | undefined;
+      if (this.settings.storageMode === 'drive' && this.driveService) {
+        this.updateProgress(progressModal, {
+          step: 'uploading-drive',
+          progress: 88,
+          message: this.getProgressMessage('uploading-drive')
+        });
+
+        try {
+          const fileName = imagePath.split('/').pop() || 'poster.png';
+          driveResult = await this.driveService.uploadImage(
+            imageResult.imageData,
+            imageResult.mimeType,
+            fileName
+          );
+        } catch (error) {
+          console.error('[NanoBanana] Drive upload failed, falling back to local:', error);
+          new Notice(this.getProgressMessage('drive-upload-failed'));
+        }
+      }
+
       this.updateProgress(progressModal, {
         step: 'embedding',
         progress: 95,
         message: this.getProgressMessage('embedding')
       });
 
-      await this.fileService.embedImageInNote(this.lastNoteFile, imagePath);
+      await this.fileService.embedImageInNote(this.lastNoteFile, imagePath, driveResult);
 
       if (progressModal) {
         progressModal.showSuccess(imagePath);
@@ -543,6 +615,24 @@ export default class NanoBananaPlugin extends Plugin {
         es: 'Insertando en nota...',
         fr: 'Insertion dans la note...',
         de: 'In Notiz einbetten...'
+      },
+      'uploading-drive': {
+        ko: 'Google Drive에 업로드 중...',
+        en: 'Uploading to Google Drive...',
+        ja: 'Google Driveにアップロード中...',
+        zh: '正在上传到Google Drive...',
+        es: 'Subiendo a Google Drive...',
+        fr: 'Téléversement vers Google Drive...',
+        de: 'Upload zu Google Drive...'
+      },
+      'drive-upload-failed': {
+        ko: 'Drive 업로드 실패. 로컬 이미지로 삽입합니다.',
+        en: 'Drive upload failed. Embedding local image instead.',
+        ja: 'Driveアップロード失敗。ローカル画像を挿入します。',
+        zh: 'Drive上传失败。将嵌入本地图片。',
+        es: 'Error al subir a Drive. Se insertará la imagen local.',
+        fr: 'Échec du téléversement Drive. Insertion de l\'image locale.',
+        de: 'Drive-Upload fehlgeschlagen. Lokales Bild wird eingebettet.'
       },
       'complete': {
         ko: '완료!',
