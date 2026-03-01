@@ -283,22 +283,32 @@ export class DriveService {
     codeVerifier: string,
     redirectUri: string
   ): Promise<OAuthTokens> {
-    const response = await requestUrl({
-      url: this.TOKEN_URL,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        code,
-        client_id: this.settings.googleClientId,
-        client_secret: this.settings.googleClientSecret,
-        redirect_uri: redirectUri,
-        grant_type: 'authorization_code',
-        code_verifier: codeVerifier
-      }).toString()
-    });
+    let response;
+    try {
+      response = await requestUrl({
+        url: this.TOKEN_URL,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          code,
+          client_id: this.settings.googleClientId,
+          client_secret: this.settings.googleClientSecret,
+          redirect_uri: redirectUri,
+          grant_type: 'authorization_code',
+          code_verifier: codeVerifier
+        }).toString(),
+        throw: false
+      });
+    } catch (error) {
+      console.error('[NanoBanana] Token exchange request failed:', error);
+      throw new Error(`Token exchange request failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
 
     if (response.status !== 200) {
-      throw new Error(`Token exchange failed: ${response.status}`);
+      const errorBody = response.json ?? response.text;
+      console.error('[NanoBanana] Token exchange failed:', response.status, errorBody);
+      const errorDesc = response.json?.error_description || response.json?.error || `status ${response.status}`;
+      throw new Error(`Token exchange failed: ${errorDesc}`);
     }
 
     const data = response.json;

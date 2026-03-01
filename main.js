@@ -1392,21 +1392,32 @@ Content-Transfer-Encoding: base64\r
     };
   }
   async exchangeCodeForTokens(code, codeVerifier, redirectUri) {
-    const response = await (0, import_obsidian5.requestUrl)({
-      url: this.TOKEN_URL,
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        code,
-        client_id: this.settings.googleClientId,
-        client_secret: this.settings.googleClientSecret,
-        redirect_uri: redirectUri,
-        grant_type: "authorization_code",
-        code_verifier: codeVerifier
-      }).toString()
-    });
+    var _a, _b, _c;
+    let response;
+    try {
+      response = await (0, import_obsidian5.requestUrl)({
+        url: this.TOKEN_URL,
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          code,
+          client_id: this.settings.googleClientId,
+          client_secret: this.settings.googleClientSecret,
+          redirect_uri: redirectUri,
+          grant_type: "authorization_code",
+          code_verifier: codeVerifier
+        }).toString(),
+        throw: false
+      });
+    } catch (error) {
+      console.error("[NanoBanana] Token exchange request failed:", error);
+      throw new Error(`Token exchange request failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
     if (response.status !== 200) {
-      throw new Error(`Token exchange failed: ${response.status}`);
+      const errorBody = (_a = response.json) != null ? _a : response.text;
+      console.error("[NanoBanana] Token exchange failed:", response.status, errorBody);
+      const errorDesc = ((_b = response.json) == null ? void 0 : _b.error_description) || ((_c = response.json) == null ? void 0 : _c.error) || `status ${response.status}`;
+      throw new Error(`Token exchange failed: ${errorDesc}`);
     }
     const data = response.json;
     const expiresAt = Date.now() + data.expires_in * 1e3;
